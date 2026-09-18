@@ -26,6 +26,7 @@ def get_vietnam_datetime_db():
 # ===== GROUP DICE GAME MODULE =====
 group_games = {}
 room_betting_enabled = {}
+game_history = {} # Lưu lịch sử cầu: {group_id: [{'tx': 'tai', 'cl': 'chan'}, ...]}
 
 DEFAULT_BET_AMOUNTS = [1000, 5000, 10000, 50000, 100000, 500000]
 DEFAULT_CYCLE_TIME = 60
@@ -33,7 +34,7 @@ DEFAULT_REMINDER_INTERVALS = [60, 40, 20, 10, 5, 4, 3, 2, 1]
 
 # ===== BIẾN TOÀN CỤC =====
 _bot_instance = None
-GROUP_IDS = [-1004322118515] # Đã di chuyển lên trên để tránh lỗi NameError
+GROUP_IDS = [-1004322118515] # Thay ID nhóm của bạn vào đây
 
 # ===== HÀM KIỂM TRA BẢO TRÌ =====
 def is_system_maintenance():
@@ -73,8 +74,22 @@ def admin_only(func):
         return await func(update, ctx, *args, **kwargs)
     return wrapper
 
-# ===== VÒNG LẶP GAME XÚC XẮC NHÓM (ĐÃ NÂNG CẤP LÊN 6 XÚC XẮC) =====
+# ===== HÀM LẤY VÀ CẬP NHẬT HŨ JACKPOT =====
+def get_jackpot():
+    res = query("SELECT value FROM settings WHERE key='jackpot_amount'")
+    if res:
+        return int(res[0][0])
+    else:
+        # Khởi tạo hũ nếu chưa có
+        query("INSERT INTO settings (key, value) VALUES ('jackpot_amount', '1000000000') ON CONFLICT (key) DO NOTHING")
+        return 1000000000
+
+def update_jackpot(amount):
+    query("UPDATE settings SET value=%s WHERE key='jackpot_amount'", (str(amount),))
+
+# ===== VÒNG LẶP GAME XÚC XẮC NHÓM (ĐÃ NÂNG CẤP LÊN 6 XÚC XẮC + JACKPOT) =====
 async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
+    session_id = 113080 # Bạn có thể tạo ID động nếu muốn
     while True:
         try:
             if not room_betting_enabled.get(group_id, True):
@@ -83,7 +98,7 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                 
             game_state = {
                 "status": "betting",
-                "bets": {},  # Key: f"{user_id}_{choice}"
+                "bets": {},
                 "message_id": None,
                 "cycle_start": datetime.now()
             }
@@ -150,12 +165,11 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
             d5 = await bot.send_dice(chat_id, emoji="🎲")
             d6 = await bot.send_dice(chat_id, emoji="🎲")
             
-            await asyncio.sleep(5) # Chờ lâu hơn chút cho 6 xúc xắc
+            await asyncio.sleep(5)
             
-            # Tổng điểm từ 6-36
             v1, v2, v3, v4, v5, v6 = d1.dice.value, d2.dice.value, d3.dice.value, d4.dice.value, d5.dice.value, d6.dice.value
-            total = v1 + v2 + v3 + v4 + v5 + v6
-            # Tài: 21-36, Xỉu: 6-20
+            dice_values = [v1, v2, v3, v4, v5, v6]
+            total = sum(dice_values)
             res_tx = "tai" if total >= 21 else "xiu"
             res_cl = "chan" if total % 2 == 0 else "le"
             
@@ -164,6 +178,7 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
             win_list = []
             lose_list = []
 
+            # Xử lý từng cược
             for bet_key, bet in game_state["bets"].items():
                 uid = bet["user_id"]
                 amt = bet["amount"]
@@ -184,23 +199,90 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                     total_lose += amt
                     lose_list.append(f"❌ {u_name}: {choice.upper()} -`{amt:,}đ`")
 
-            final_msg = (
-                f"🎲 **KẾT QUẢ PHIÊN (6 XÚC XẮC)** 🎲\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
-                f"✨ Kết quả: **{v1} - {v2} - {v3} - {v4} - {v5} - {v6}** (Tổng: `{total}`)\n"
-                f"🏆 Cửa thắng: **{res_tx.upper()} - {res_cl.upper()}**\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
-                f"📈 **DANH SÁCH THẮNG:**\n"
-                + (("\n".join(win_list)) if win_list else "  (Không có)") + "\n\n"
-                f"📉 **DANH SÁCH THUA:**\n"
-                + (("\n".join(lose_list)) if lose_list else "  (Không có)") + "\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
-                f"💰 **TỔNG THẮNG:** `+{total_win:,}đ`\n"
-                f"💀 **TỔNG THUA:** `-{total_lose:,}đ`\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
-                f"🔓 **MỞ KHÓA CHAT!** Ván mới bắt đầu sau 10s."
-            )
+            # ===== XỬ LÝ HŨ JACKPOT =====
+            jackpot_amount = get_jackpot()
+            jackpot_winners = []
             
+            # 1. Trích 10% nếu tổng thua > tổng thắng
+            if total_lose > total_win:
+                contribution = int((total_lose - total_win) * 0.1)
+                jackpot_amount += contribution
+                update_jackpot(jackpot_amount)
+                
+            # 2. Kiểm tra nổ hũ (3 con 1 hoặc 3 con 6)
+            count_1 = dice_values.count(1)
+            count_6 = dice_values.count(6)
+            
+            if count_6 >= 3: # Nổ hũ TÀI
+                winners = [b for b in game_state["bets"].values() if b["choice"] == "tai"]
+                if winners and jackpot_amount > 0:
+                    share = jackpot_amount // len(winners)
+                    for w in winners:
+                        add_money(w["user_id"], share, f"Nổ hũ Jackpot (3 con 6) +{share:,}đ")
+                        jackpot_winners.append(f"👤 {w['username']}: +`{share:,}đ`")
+                    update_jackpot(1000000000) # Reset hũ
+                    jackpot_amount = 1000000000
+            
+            elif count_1 >= 3: # Nổ hũ XỈU
+                winners = [b for b in game_state["bets"].values() if b["choice"] == "xiu"]
+                if winners and jackpot_amount > 0:
+                    share = jackpot_amount // len(winners)
+                    for w in winners:
+                        add_money(w["user_id"], share, f"Nổ hũ Jackpot (3 con 1) +{share:,}đ")
+                        jackpot_winners.append(f"👤 {w['username']}: +`{share:,}đ`")
+                    update_jackpot(1000000000) # Reset hũ
+                    jackpot_amount = 1000000000
+
+            # ===== LƯU LỊCH SỬ CẦU =====
+            if group_id not in game_history:
+                game_history[group_id] = []
+            game_history[group_id].append({'tx': res_tx, 'cl': res_cl})
+            if len(game_history[group_id]) > 10:
+                game_history[group_id].pop(0) # Giữ 10 ván gần nhất
+
+            # ===== TẠO TIN NHẮN KẾT QUẢ MỚI =====
+            session_id += 1
+            dice_str = " ".join(map(str, dice_values))
+            
+            # Tạo chuỗi cầu
+            cau_tx = ""
+            cau_cl = ""
+            for h in game_history.get(group_id, []):
+                cau_tx += "🔵" if h['tx'] == "tai" else "🔴"
+                cau_cl += "⚪️" if h['cl'] == "chan" else "⚫️"
+            
+            # Định dạng số tiền
+            def format_money(amount):
+                return f"{amount:,}".replace(",", ".")
+
+            final_msg = (
+                f"📝 **Kết quả Phiên #{session_id}**\n"
+                f"┏━━━━━━━━━━━━━\n"
+                f"┃ {dice_str} ➡️ {total} {res_tx.upper()} {res_cl.upper()} {'🔴' if res_tx == 'tai' else '⚫️'}{'⚪️' if res_cl == 'chan' else '⚫️'}\n"
+                f"┃\n"
+                f"┃ Tổng thắng: {format_money(total_win)}\n"
+                f"┃ Tổng thua: {format_money(total_lose)}\n"
+                f"┃\n"
+                f"┃ 👍 Hũ jackpot: {format_money(jackpot_amount)}\n"
+                f"┗━━━━━━━━━━━━━\n"
+                f"**Cầu gần đây:**\n"
+                f"{cau_tx if cau_tx else 'Chưa có'}\n"
+                f"      🔵  Tài             🔴  XỈU\n"
+                f"{cau_cl if cau_cl else 'Chưa có'}\n"
+                f"      ⚪️  Chẵn        ⚫️  Lẻ."
+            )
+
+            # Thêm thông báo nổ hũ nếu có
+            if jackpot_winners:
+                final_msg += (
+                    f"\n\n🎉 **NỔ HŨ JACKPOT!** 🎉\n"
+                    f"┏━━━━━━━━━━━━━\n"
+                    f"┃ 💰 Chia đều cho những người thắng:\n"
+                    + "\n".join([f"┃ {w}" for w in jackpot_winners]) +
+                    f"\n┗━━━━━━━━━━━━━\n"
+                    f"🔄 Hũ đã được reset về 1.000.000.000đ"
+                )
+
             await bot.send_message(chat_id, final_msg, parse_mode="Markdown")
             
             group_games.pop(group_id, None)
@@ -230,11 +312,9 @@ async def place_bet_in_group(bot, user_id: int, group_id: int, choice: str, amou
     if not sub_money(user_id, amount, note):
         return False, "❌ Có lỗi xảy ra khi trừ tiền, vui lòng thử lại!"
 
-    # ===== CỘNG DỒN CƯỢC THEO TỪNG CỬA =====
     bet_key = f"{user_id}_{choice}"
     
     if bet_key in game["bets"]:
-        # Đã có cược cùng cửa -> cộng dồn
         old_amount = game["bets"][bet_key]["amount"]
         game["bets"][bet_key]["amount"] = old_amount + amount
         total_bet = game["bets"][bet_key]["amount"]
@@ -243,7 +323,6 @@ async def place_bet_in_group(bot, user_id: int, group_id: int, choice: str, amou
                      f"💰 Cược thêm: `{amount:,}đ`\n"
                      f"📊 Tổng cược cửa này: `{total_bet:,}đ`")
     else:
-        # Cược mới
         game["bets"][bet_key] = {
             "user_id": user_id,
             "amount": amount,
@@ -459,6 +538,11 @@ if not res_system_mt:
 res_tongbao = query("SELECT 1 FROM settings WHERE key='mt_tongbao'")
 if not res_tongbao:
     query("INSERT INTO settings VALUES('mt_tongbao', '0')")
+
+# Khởi tạo hũ Jackpot
+res_jackpot = query("SELECT 1 FROM settings WHERE key='jackpot_amount'")
+if not res_jackpot:
+    query("INSERT INTO settings VALUES('jackpot_amount', '1000000000')")
 
 # ===== HÀM KIỂM SOÁT TỈ LỆ =====
 def get_rate_by_id(game_id, user_id=None):
