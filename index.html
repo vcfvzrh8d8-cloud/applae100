@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tài Xỉu Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- ===== MÀN HÌNH CHÍNH (Ảnh 1) ===== -->
+        <div id="main-screen" class="screen active">
+            <!-- Header -->
+            <div class="header">
+                <button class="icon-btn" onclick="toggleOverlay('bet-history')">📋</button>
+                <div class="title">TÀI XỈU</div>
+                <div class="header-right">
+                    <button class="icon-btn" onclick="toggleOverlay('session-history')">📊</button>
+                    <button class="icon-btn" onclick="toggleOverlay('info')">ℹ️</button>
+                </div>
+            </div>
+
+            <!-- Số dư -->
+            <div class="balance-bar">
+                <span>Số dư: <b id="balance">0</b>đ</span>
+                <span id="session-info">Phiên #0</span>
+            </div>
+
+            <!-- Bàn chơi -->
+            <div class="game-board">
+                <div class="bet-side">
+                    <button class="bet-btn tai" onclick="openBetScreen('TAI')">
+                        <span class="bet-label">TÀI</span>
+                        <span class="bet-amount" id="tai-amount">0đ</span>
+                    </button>
+                </div>
+
+                <div class="dice-center">
+                    <div class="dice-box" id="dice-result">--</div>
+                    <div class="player-count" id="player-count">👥 0</div>
+                </div>
+
+                <div class="bet-side">
+                    <button class="bet-btn xiu" onclick="openBetScreen('XIU')">
+                        <span class="bet-label">XỈU</span>
+                        <span class="bet-amount" id="xiu-amount">0đ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nút điều khiển -->
+            <div class="controls">
+                <button class="hand-btn" id="hand-btn" onclick="toggleHand()">
+                    <span class="hand-icon">✋</span>
+                    <span class="hand-x">✕</span>
+                </button>
+                <div class="action-buttons">
+                    <button class="action-btn bet" onclick="openBetScreen('TAI')">ĐẶT CƯỢC TÀI</button>
+                    <button class="action-btn bet" onclick="openBetScreen('XIU')">ĐẶT CƯỢC XỈU</button>
+                </div>
+                <button class="close-btn" onclick="closeApp()">✕</button>
+            </div>
+
+            <!-- Kết quả gần đây -->
+            <div class="recent-results" id="recent-results">
+                <!-- Hiển thị các mã T/X gần đây -->
+            </div>
+        </div>
+
+        <!-- ===== MÀN HÌNH ĐẶT CƯỢC (Ảnh 2) ===== -->
+        <div id="bet-screen" class="screen">
+            <div class="bet-screen-header">
+                <button onclick="closeBetScreen()">←</button>
+                <span>ĐẶT CƯỢC <b id="bet-choice-label"></b></span>
+                <button onclick="closeApp()">✕</button>
+            </div>
+
+            <div class="bet-screen-balance">
+                Số dư: <b id="bet-balance">0</b>đ
+            </div>
+
+            <div class="quick-amounts">
+                <button onclick="setAmount(1000)">1K</button>
+                <button onclick="setAmount(10000)">10K</button>
+                <button onclick="setAmount(50000)">50K</button>
+                <button onclick="setAmount(100000)">100K</button>
+                <button onclick="setAmount(500000)">500K</button>
+                <button onclick="setAmount(1000000)">1M</button>
+                <button onclick="setAmount(5000000)">5M</button>
+                <button onclick="setAmount(10000000)">10M</button>
+                <button onclick="setAmount(50000000)">50M</button>
+            </div>
+
+            <div class="amount-input-wrap">
+                <input type="number" id="bet-amount-input" placeholder="Nhập số tiền..." inputmode="numeric">
+            </div>
+
+            <div class="bet-screen-actions">
+                <button class="btn-allin" onclick="allIn()">ALL-IN</button>
+                <button class="btn-bet" onclick="confirmBet()">ĐẶT CƯỢC</button>
+                <button class="btn-cancel" onclick="closeBetScreen()">HỦY</button>
+            </div>
+        </div>
+
+        <!-- ===== LỊCH SỬ CƯỢC (Ảnh 3) ===== -->
+        <div id="bet-history" class="overlay">
+            <div class="overlay-header">
+                <span>Lịch Sử Cược</span>
+                <button onclick="closeOverlay()">✕</button>
+            </div>
+            <div class="overlay-body">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Phiên</th>
+                            <th>Thời Gian</th>
+                            <th>Cửa Đặt</th>
+                            <th>Kết Quả</th>
+                            <th>Đặt Cược</th>
+                            <th>Tiền Thắng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bet-history-body">
+                        <!-- Dữ liệu sẽ được đổ vào đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== LỊCH SỬ PHIÊN DẠNG DÂY (Ảnh 4 & 5) ===== -->
+        <div id="session-history" class="overlay">
+            <div class="overlay-header">
+                <span>Lịch Sử Phiên</span>
+                <button onclick="closeOverlay()">✕</button>
+            </div>
+            <div class="overlay-body">
+                <div class="chart-tabs">
+                    <button class="tab active" onclick="switchChart('xiu')">XỈU</button>
+                    <button class="tab" onclick="switchChart('tai')">TÀI</button>
+                </div>
+                <div id="chart-area">
+                    <canvas id="chart-canvas"></canvas>
+                </div>
+                <button class="expand-chart-btn" id="expand-btn" onclick="toggleExpandChart()">▼ Mở rộng</button>
+            </div>
+        </div>
+
+        <!-- ===== THÔNG TIN ===== -->
+        <div id="info" class="overlay">
+            <div class="overlay-header">
+                <span>Thông Tin</span>
+                <button onclick="closeOverlay()">✕</button>
+            </div>
+            <div class="overlay-body">
+                <p>Game Tài Xỉu Mini App - Phiên bản 1.0</p>
+                <p>Tỉ lệ thắng: x1.95</p>
+                <p>Cược tối thiểu: 1,000đ</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
