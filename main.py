@@ -3598,7 +3598,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             try:
                 await ctx.bot.send_message(
                     u_id,
-                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ}</code> bị từ chối.\n'
+                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> bị từ chối.\n'
                     f'{ce("🔄")} Tiền đã được hoàn về số dư của bạn.',
                     parse_mode=ParseMode.HTML
                 )
