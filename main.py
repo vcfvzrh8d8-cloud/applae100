@@ -638,6 +638,7 @@ def get_full_result_text(res_tx, res_cl):
     tx_text = "TÀI" if res_tx == "tai" else "XỈU"
     cl_text = "CHẴN" if res_cl == "chan" else "LẺ"
     return f"{tx_text} {cl_text}"
+
 # ============================================================
 # TÀI XỈU ROOM - GAME CYCLE
 # ============================================================
@@ -668,12 +669,24 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                 f'{ce("⚡")} <b>ĐẶT CƯỢC NGAY!</b>\n'
                 f'{ce("⏰")} Thời gian còn lại: <code>60s</code>\n\n'
                 f'{ce("🎯")} <b>CÁCH CHƠI:</b>\n'
-                f'• Tài (11-18): <code>t [số_tiền]</code> hoặc <code>t max</code>\n'
-                f'• Xỉu (3-10): <code>x [số_tiền]</code> hoặc <code>x max</code>\n'
-                f'• Chẵn: <code>c [số_tiền]</code> hoặc <code>c max</code>\n'
-                f'• Lẻ: <code>l [số_tiền]</code> hoặc <code>l max</code>\n\n'
-                f'{ce("🏆")} <b>Tỉ lệ thưởng: x1.95</b>\n'
-                f'{ce("💰")} <b>Cược không giới hạn!</b>\n\n'
+                f'• <code>t [số_tiền]</code> hoặc <code>t max</code> - TÀI\n'
+                f'• <code>x [số_tiền]</code> hoặc <code>x max</code> - XỈU\n'
+                f'• <code>c [số_tiền]</code> hoặc <code>c max</code> - CHẴN\n'
+                f'• <code>l [số_tiền]</code> hoặc <code>l max</code> - LẺ\n\n'
+                f'🎲 T / X: Tổng 11–18 Tài / 3–10 Xỉu (bộ ba tính theo mặt, không quét sạch)\n'
+                f'🎯 C / L: Tổng chẵn Chẵn / lẻ Lẻ\n'
+                f'🔥 TL/TC/XL/XC: một lệnh kết hợp hai cửa — phải thắng cả hai mới ăn · trả x3.2\n'
+                f'👑 A1–A6: chọn bộ ba • D4–D17: tổng điểm (tổng 3/18 xin đặt A1/A6)\n'
+                f'🥷 Ẩn danh: TT · XX · CC · LL — nhắn riêng FB88(VD TT 5000). Nhóm hiện Ẩn Danh, không hiện tên. Chỉ nhóm Tài Xỉu chính.\n'
+                f'❗️ Min 1.000. Không đặt ngược cửa: Tài↔Xỉu, Chẵn↔Lẻ; cửa kết hợp xung đột với cửa ngược. Vẫn có thể đặt tách T+L. Max/người mỗi cửa 10.000.000（kết hợp 5.000.000）· Max cửa 50.000.000（kết hợp 25.000.000）; A/D mỗi số giới hạn riêng\n\n'
+                f'🥇 <b>Hũ Tài Xỉu</b>\n'
+                f'1️⃣ Phiên nhà cái có lời → góp 1% vào hũ nhóm đó\n'
+                f'2️⃣ Ra Bão 666 → trả 50% hũ hiện tại theo tỉ lệ cược phiên\n'
+                f'3️⃣ Cược cộng dồn trong phiên đủ 10.000 mới được chia hũ (thắng hay thua đều tính); lệnh nhỏ hơn vẫn góp hũ\n'
+                f'🎁 Tiền vào số dư ngay · Cược lại x1\n'
+                f'🔥 Giờ vàng (13:00–14:00 & 21:00–22:00): hũ +888K; nạp thêm trong giờ này cũng tặng 5%; hết giờ thu phần cộng thêm, hũ gốc giữ nguyên\n'
+                f'🎉 Ra Bão 111–666: TOP 3 cược phiên nhận Code Bão (mệnh giá = mặt × 1111). Vào TOP là có mã, hôm nay vào mấy trận đổi bấy nhiêu. Chưa nạp cũng đổi được.\n\n'
+                f'📣 Kết quả cược và trả thưởng sẽ được FB88 báo riêng cho bạn.\n\n'
                 f'{ce("📊")} <b>TỔNG CƯỢC:</b>\n'
                 f'{ce("🎲")} TÀI: <code>0đ</code>\n'
                 f'{ce("🎲")} XỈU: <code>0đ</code>\n'
@@ -755,26 +768,46 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
             total_win = 0
             total_lose = 0
 
+            # Xử lý từng người cược
             for bet_key, bet in game_state["bets"].items():
                 uid = bet["user_id"]
                 amt = bet["amount"]
                 choice = bet["choice"]
-                choice_display = {"tai": "T", "xiu": "X", "chan": "C", "le": "L"}.get(choice, "?")
-
-                is_win = (choice == "tai" and res_tx == "tai") or \
-                         (choice == "xiu" and res_tx == "xiu") or \
-                         (choice == "chan" and res_cl == "chan") or \
-                         (choice == "le" and res_cl == "le")
+                is_anonymous = bet.get("anonymous", False)
+                
+                # Xác định thắng thua
+                is_win = False
+                multiplier = 1.95
+                
+                if choice == "tai" and res_tx == "tai": is_win = True
+                elif choice == "xiu" and res_tx == "xiu": is_win = True
+                elif choice == "chan" and res_cl == "chan": is_win = True
+                elif choice == "le" and res_cl == "le": is_win = True
+                elif choice == "tl" and res_tx == "tai" and res_cl == "le": is_win = True; multiplier = 3.2
+                elif choice == "tc" and res_tx == "tai" and res_cl == "chan": is_win = True; multiplier = 3.2
+                elif choice == "xl" and res_tx == "xiu" and res_cl == "le": is_win = True; multiplier = 3.2
+                elif choice == "xc" and res_tx == "xiu" and res_cl == "chan": is_win = True; multiplier = 3.2
+                elif choice.startswith("a"):
+                    target_triple = int(choice[1])
+                    if dice_values == [target_triple, target_triple, target_triple]:
+                        is_win = True
+                        multiplier = 150
+                elif choice.startswith("d"):
+                    target_total = int(choice[1:])
+                    if total == target_total:
+                        is_win = True
+                        multiplier = 1.95
 
                 if is_win:
-                    win_amt = int(amt * 1.95)
+                    win_amt = int(amt * multiplier)
                     add_money(uid, win_amt, f"Thắng Tài Xỉu Room {choice.upper()}")
                     total_win += win_amt
                     new_balance = get_balance(uid)
                     try:
+                        display_name = "Ẩn Danh" if is_anonymous else f"ID {uid}"
                         await bot.send_message(uid,
                             f'{ce("✅")} <b>THẮNG RỒI</b>  #{session_id}  ({dice_str} {result_code})\n'
-                            f'{ce("✅")} <b>Lệnh Cược:</b> {choice_display} {fmt_money(amt)}đ\n'
+                            f'{ce("✅")} <b>Lệnh Cược:</b> {choice.upper()} {fmt_money(amt)}đ\n'
                             f'{ce("💰")} <b>Tiền thắng:</b> +{fmt_money(win_amt)}đ\n'
                             f'{ce("💎")} <b>Số dư mới:</b> {fmt_money(new_balance)}đ\n'
                             f'{ce("🎉")} Chúc ông chủ may mắn',
@@ -787,7 +820,7 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                     try:
                         await bot.send_message(uid,
                             f'{ce("❌")} <b>THUA</b>  #{session_id}  ({dice_str} {result_code})\n'
-                            f'{ce("❌")} <b>Lệnh Cược:</b> {choice_display} {fmt_money(amt)}đ\n'
+                            f'{ce("❌")} <b>Lệnh Cược:</b> {choice.upper()} {fmt_money(amt)}đ\n'
                             f'{ce("❌")} <b>Tiền Thắng:</b> 0đ\n'
                             f'{ce("💵")} <b>Số dư mới:</b> {fmt_money(new_balance)}đ\n'
                             f'Chúc ông chủ may mắn',
@@ -909,34 +942,161 @@ async def place_bet_in_group(bot, user_id, group_id, choice, amount, username=""
     if amount < 1000:
         return False, f'{ce("❌")} Số tiền cược tối thiểu là <code>1,000đ</code>!'
 
-    note = f"Cược {choice.upper()} nhóm - {amount:,}đ"
-    if not sub_money(user_id, amount, note):
-        return False, f'{ce("❌")} Lỗi trừ tiền, vui lòng thử lại!'
-
+    # Kiểm tra không đặt ngược cửa
     bet_key = f"{user_id}_{choice}"
     if bet_key in game["bets"]:
+        # Đã có cược cho cửa này, cộng dồn
         old_amount = game["bets"][bet_key]["amount"]
-        game["bets"][bet_key]["amount"] = old_amount + amount
-        total_bet = game["bets"][bet_key]["amount"]
+        new_total = old_amount + amount
+        # Trừ tiền
+        if not sub_money(user_id, amount, f"Cược {choice.upper()} nhóm - {amount:,}đ"):
+            return False, f'{ce("❌")} Lỗi trừ tiền, vui lòng thử lại!'
+        game["bets"][bet_key]["amount"] = new_total
     else:
+        # Kiểm tra xung đột cửa
+        conflict = False
+        for existing_bet in game["bets"].values():
+            if existing_bet["user_id"] == user_id:
+                existing_choice = existing_bet["choice"]
+                # Tài vs Xỉu
+                if (choice == "tai" and existing_choice == "xiu") or (choice == "xiu" and existing_choice == "tai"):
+                    conflict = True
+                # Chẵn vs Lẻ
+                if (choice == "chan" and existing_choice == "le") or (choice == "le" and existing_choice == "chan"):
+                    conflict = True
+                # Kết hợp xung đột
+                if choice in ["tl", "tc", "xl", "xc"] and existing_choice in ["tai", "xiu", "chan", "le"]:
+                    if (choice[0] == "t" and existing_choice == "xiu") or (choice[0] == "x" and existing_choice == "tai"):
+                        conflict = True
+                    if (choice[1] == "l" and existing_choice == "chan") or (choice[1] == "c" and existing_choice == "le"):
+                        conflict = True
+                if existing_choice in ["tl", "tc", "xl", "xc"] and choice in ["tai", "xiu", "chan", "le"]:
+                    if (existing_choice[0] == "t" and choice == "xiu") or (existing_choice[0] == "x" and choice == "tai"):
+                        conflict = True
+                    if (existing_choice[1] == "l" and choice == "chan") or (existing_choice[1] == "c" and choice == "le"):
+                        conflict = True
+        if conflict:
+            return False, f'{ce("🚫")} <b>KHÔNG ĐƯỢC ĐẶT NGƯỢC CỬA!</b>\nBạn đã có cược xung đột trong phiên này.'
+        
+        if not sub_money(user_id, amount, f"Cược {choice.upper()} nhóm - {amount:,}đ"):
+            return False, f'{ce("❌")} Lỗi trừ tiền, vui lòng thử lại!'
+        
         game["bets"][bet_key] = {
             "user_id": user_id,
             "amount": amount,
             "choice": choice,
-            "username": username
+            "username": username,
+            "anonymous": False
         }
-        total_bet = amount
 
     new_balance = get_balance(user_id)
-    choice_display = {"tai": "T", "xiu": "X", "chan": "C", "le": "L"}.get(choice, "?")
+    
+    choice_display_map = {
+        "tai": "TÀI", "xiu": "XỈU", "chan": "CHẴN", "le": "LẺ",
+        "tl": "TÀI + LẺ", "tc": "TÀI + CHẴN", "xl": "XỈU + LẺ", "xc": "XỈU + CHẴN",
+        "a1": "BỘ BA 1-1-1", "a2": "BỘ BA 2-2-2", "a3": "BỘ BA 3-3-3",
+        "a4": "BỘ BA 4-4-4", "a5": "BỘ BA 5-5-5", "a6": "BỘ BA 6-6-6",
+        "d4": "TỔNG ĐIỂM 4", "d5": "TỔNG ĐIỂM 5", "d6": "TỔNG ĐIỂM 6", "d7": "TỔNG ĐIỂM 7",
+        "d8": "TỔNG ĐIỂM 8", "d9": "TỔNG ĐIỂM 9", "d10": "TỔNG ĐIỂM 10", "d11": "TỔNG ĐIỂM 11",
+        "d12": "TỔNG ĐIỂM 12", "d13": "TỔNG ĐIỂM 13", "d14": "TỔNG ĐIỂM 14", "d15": "TỔNG ĐIỂM 15",
+        "d16": "TỔNG ĐIỂM 16", "d17": "TỔNG ĐIỂM 17"
+    }.get(choice, choice.upper())
+
     session_id = game.get("session_id", 0)
-    win_amount = int(total_bet * 1.95)
+    multiplier = 1.95
+    if choice in ["tl", "tc", "xl", "xc"]:
+        multiplier = 3.2
+    elif choice.startswith("a"):
+        multiplier = 150
+    elif choice.startswith("d"):
+        multiplier = 1.95
+        
+    win_amount = int(game["bets"][bet_key]["amount"] * multiplier)
 
     msg = (
         f'{ce("✅")} Đặt thành công — Phiên #{session_id}\n\n'
         f'{ce("🥷")} Ẩn Danh\n'
-        f'{ce("🎯")} {choice_display} · {fmt_money(total_bet)}\n'
-        f'{ce("💲")} Tỷ lệ x1.95 · Thắng {fmt_money(win_amount)}\n'
+        f'{ce("🎯")} {choice_display_map} · {fmt_money(game["bets"][bet_key]["amount"])}\n'
+        f'{ce("💲")} Tỷ lệ x{multiplier} · Thắng {fmt_money(win_amount)}\n'
+        f'{ce("💰")} Số dư: {fmt_money(new_balance)}'
+    )
+    return True, msg
+
+# Hàm đặt cược ẩn danh
+async def place_anonymous_bet(bot, user_id, group_id, choice, amount):
+    if not check_bank_linked(user_id):
+        return False, (
+            f'{ce("🚫")} <b>BẮT BUỘC LIÊN KẾT NGÂN HÀNG!</b>\n\n'
+            f'Bạn cần liên kết tài khoản ngân hàng để tham gia cá cược.\n'
+            f'Dùng lệnh: <code>/lienket [Ngân_hàng] [STK] [Tên]</code>'
+        )
+    if not room_betting_enabled.get(group_id, True):
+        return False, f'{ce("🔒")} <b>PHÒNG ĐÃ BỊ KHÓA CƯỢC!</b>'
+    game = group_games.get(group_id)
+    if not game or game["status"] != "betting":
+        return False, f'{ce("❌")} Hiện tại không có phiên cược nào đang mở!'
+    balance = get_balance(user_id)
+    if balance < amount:
+        return False, f'{ce("❌")} Số dư không đủ! Cần <code>{fmt_money(amount)}đ</code> nhưng chỉ có <code>{fmt_money(balance)}đ</code>.'
+    if amount < 1000:
+        return False, f'{ce("❌")} Số tiền cược tối thiểu là <code>1,000đ</code>!'
+
+    # Kiểm tra không đặt ngược cửa
+    bet_key = f"{user_id}_{choice}"
+    if bet_key in game["bets"]:
+        old_amount = game["bets"][bet_key]["amount"]
+        new_total = old_amount + amount
+        if not sub_money(user_id, amount, f"Cược ẩn danh {choice.upper()} - {amount:,}đ"):
+            return False, f'{ce("❌")} Lỗi trừ tiền, vui lòng thử lại!'
+        game["bets"][bet_key]["amount"] = new_total
+    else:
+        conflict = False
+        for existing_bet in game["bets"].values():
+            if existing_bet["user_id"] == user_id:
+                existing_choice = existing_bet["choice"]
+                if (choice == "tai" and existing_choice == "xiu") or (choice == "xiu" and existing_choice == "tai"):
+                    conflict = True
+                if (choice == "chan" and existing_choice == "le") or (choice == "le" and existing_choice == "chan"):
+                    conflict = True
+                if choice in ["tl", "tc", "xl", "xc"] and existing_choice in ["tai", "xiu", "chan", "le"]:
+                    if (choice[0] == "t" and existing_choice == "xiu") or (choice[0] == "x" and existing_choice == "tai"):
+                        conflict = True
+                    if (choice[1] == "l" and existing_choice == "chan") or (choice[1] == "c" and existing_choice == "le"):
+                        conflict = True
+                if existing_choice in ["tl", "tc", "xl", "xc"] and choice in ["tai", "xiu", "chan", "le"]:
+                    if (existing_choice[0] == "t" and choice == "xiu") or (existing_choice[0] == "x" and choice == "tai"):
+                        conflict = True
+                    if (existing_choice[1] == "l" and choice == "chan") or (existing_choice[1] == "c" and choice == "le"):
+                        conflict = True
+        if conflict:
+            return False, f'{ce("🚫")} <b>KHÔNG ĐƯỢC ĐẶT NGƯỢC CỬA!</b>\nBạn đã có cược xung đột trong phiên này.'
+        
+        if not sub_money(user_id, amount, f"Cược ẩn danh {choice.upper()} - {amount:,}đ"):
+            return False, f'{ce("❌")} Lỗi trừ tiền, vui lòng thử lại!'
+        
+        game["bets"][bet_key] = {
+            "user_id": user_id,
+            "amount": amount,
+            "choice": choice,
+            "username": "Ẩn Danh",
+            "anonymous": True
+        }
+
+    new_balance = get_balance(user_id)
+    
+    choice_display_map = {
+        "tai": "TÀI", "xiu": "XỈU", "chan": "CHẴN", "le": "LẺ",
+    }.get(choice, choice.upper())
+
+    session_id = game.get("session_id", 0)
+    multiplier = 1.95
+    win_amount = int(game["bets"][bet_key]["amount"] * multiplier)
+
+    msg = (
+        f'{ce("✅")} Đặt ẩn danh thành công — Phiên #{session_id}\n\n'
+        f'{ce("🥷")} Ẩn Danh\n'
+        f'{ce("🎯")} {choice_display_map} · {fmt_money(game["bets"][bet_key]["amount"])}\n'
+        f'{ce("💲")} Tỷ lệ x{multiplier} · Thắng {fmt_money(win_amount)}\n'
         f'{ce("💰")} Số dư: {fmt_money(new_balance)}'
     )
     return True, msg
@@ -961,7 +1121,7 @@ async def bet_group_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE, choi
         return
     if not ctx.args:
         await update.message.reply_text(
-            f'{ce("❌")} Cú pháp: <code>{choice[0]} [số_tiền]</code> hoặc <code>{choice[0]} max</code>',
+            f'{ce("❌")} Cú pháp: <code>{choice} [số_tiền]</code> hoặc <code>{choice} max</code>',
             parse_mode=ParseMode.HTML)
         return
 
@@ -992,6 +1152,78 @@ async def bet_chan_group(update, ctx):
 
 async def bet_le_group(update, ctx):
     await bet_group_handler(update, ctx, "le")
+
+async def bet_tl_group(update, ctx):
+    await bet_group_handler(update, ctx, "tl")
+
+async def bet_tc_group(update, ctx):
+    await bet_group_handler(update, ctx, "tc")
+
+async def bet_xl_group(update, ctx):
+    await bet_group_handler(update, ctx, "xl")
+
+async def bet_xc_group(update, ctx):
+    await bet_group_handler(update, ctx, "xc")
+
+async def bet_a1_group(update, ctx):
+    await bet_group_handler(update, ctx, "a1")
+
+async def bet_a2_group(update, ctx):
+    await bet_group_handler(update, ctx, "a2")
+
+async def bet_a3_group(update, ctx):
+    await bet_group_handler(update, ctx, "a3")
+
+async def bet_a4_group(update, ctx):
+    await bet_group_handler(update, ctx, "a4")
+
+async def bet_a5_group(update, ctx):
+    await bet_group_handler(update, ctx, "a5")
+
+async def bet_a6_group(update, ctx):
+    await bet_group_handler(update, ctx, "a6")
+
+async def bet_d4_group(update, ctx):
+    await bet_group_handler(update, ctx, "d4")
+
+async def bet_d5_group(update, ctx):
+    await bet_group_handler(update, ctx, "d5")
+
+async def bet_d6_group(update, ctx):
+    await bet_group_handler(update, ctx, "d6")
+
+async def bet_d7_group(update, ctx):
+    await bet_group_handler(update, ctx, "d7")
+
+async def bet_d8_group(update, ctx):
+    await bet_group_handler(update, ctx, "d8")
+
+async def bet_d9_group(update, ctx):
+    await bet_group_handler(update, ctx, "d9")
+
+async def bet_d10_group(update, ctx):
+    await bet_group_handler(update, ctx, "d10")
+
+async def bet_d11_group(update, ctx):
+    await bet_group_handler(update, ctx, "d11")
+
+async def bet_d12_group(update, ctx):
+    await bet_group_handler(update, ctx, "d12")
+
+async def bet_d13_group(update, ctx):
+    await bet_group_handler(update, ctx, "d13")
+
+async def bet_d14_group(update, ctx):
+    await bet_group_handler(update, ctx, "d14")
+
+async def bet_d15_group(update, ctx):
+    await bet_group_handler(update, ctx, "d15")
+
+async def bet_d16_group(update, ctx):
+    await bet_group_handler(update, ctx, "d16")
+
+async def bet_d17_group(update, ctx):
+    await bet_group_handler(update, ctx, "d17")
 
 async def group_status_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
@@ -1425,6 +1657,7 @@ async def txmd5_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except:
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_taixiumd5(update, ctx, choice, amt)
+
 # ============================================================
 # /start
 # ============================================================
@@ -1921,18 +2154,50 @@ async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     fake_ctx = FakeCtx(ctx.bot, parts[1:], ctx.user_data, ctx.chat_data, update.message)
     
-    if command in ("t", "tai"):
-        await bet_tai_group(update, fake_ctx)
+    # Danh sách các lệnh cược
+    bet_commands = {
+        "t": "tai", "tai": "tai",
+        "x": "xiu", "xiu": "xiu",
+        "c": "chan", "chan": "chan",
+        "l": "le", "le": "le",
+        "tl": "tl", "tc": "tc", "xl": "xl", "xc": "xc",
+        "a1": "a1", "a2": "a2", "a3": "a3", "a4": "a4", "a5": "a5", "a6": "a6",
+        "d4": "d4", "d5": "d5", "d6": "d6", "d7": "d7", "d8": "d8", "d9": "d9", "d10": "d10",
+        "d11": "d11", "d12": "d12", "d13": "d13", "d14": "d14", "d15": "d15", "d16": "d16", "d17": "d17"
+    }
+    
+    if command in bet_commands:
+        choice = bet_commands[command]
+        await bet_group_handler(update, fake_ctx, choice)
         return
-    if command in ("x", "xiu"):
-        await bet_xiu_group(update, fake_ctx)
+    
+    # Lệnh ẩn danh
+    anon_commands = {
+        "tt": "tai", "xx": "xiu", "cc": "chan", "ll": "le"
+    }
+    if command in anon_commands:
+        choice = anon_commands[command]
+        if len(parts) < 2:
+            await update.message.reply_text(
+                f'{ce("❌")} Cú pháp: <code>{command} [số_tiền]</code>',
+                parse_mode=ParseMode.HTML)
+            return
+        arg = parts[1].lower()
+        if arg == "max":
+            amount = get_balance(update.effective_user.id)
+            if amount < 1000:
+                await update.message.reply_text(f'{ce("❌")} Số dư không đủ!', parse_mode=ParseMode.HTML)
+                return
+        else:
+            try:
+                amount = int(arg)
+            except ValueError:
+                await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
+                return
+        success, message = await place_anonymous_bet(ctx.bot, update.effective_user.id, update.effective_chat.id, choice, amount)
+        await update.message.reply_text(message, parse_mode=ParseMode.HTML)
         return
-    if command in ("c", "chan"):
-        await bet_chan_group(update, fake_ctx)
-        return
-    if command in ("l", "le"):
-        await bet_le_group(update, fake_ctx)
-        return
+    
     await main_handler(update, ctx)
 
 async def main_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1981,7 +2246,6 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     step = state.get("step")
     text = update.message.text.strip()
     
-    # BƯỚC 2: Nhập trị giá
     if step == "reward":
         try:
             reward = int(text.replace(",", "").replace(".", "").replace("đ", "").strip())
@@ -2005,7 +2269,6 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML)
         return True
     
-    # BƯỚC 3: Nhập số tiền cần nạp
     if step == "amount":
         try:
             required_amount = int(text.replace(",", "").replace(".", "").replace("đ", "").strip())
@@ -2029,7 +2292,6 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML)
         return True
     
-    # BƯỚC 4: Nhập số vòng cược
     if step == "wager":
         try:
             wager = int(text.replace("x", "").replace("X", "").strip())
@@ -2056,7 +2318,6 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML)
         return True
     
-    # BƯỚC 5: Nhập hạn sử dụng + Tạo code
     if step == "duration":
         duration_minutes = parse_duration(text)
         if duration_minutes is None:
@@ -2135,7 +2396,8 @@ async def codenap_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f'{ce("✍️")} Vui lòng nhập <b>trị giá của code</b> (số tiền VNĐ):\n'
         f'VD: <code>50000</code> (50,000đ)',
         parse_mode=ParseMode.HTML)
-  # ============================================================
+
+# ============================================================
 # ADMIN COMMANDS
 # ============================================================
 @admin_only
@@ -2928,7 +3190,20 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'   • <code>x [số_tiền]</code> hoặc <code>x max</code> - XỈU\n'
             f'   • <code>c [số_tiền]</code> hoặc <code>c max</code> - CHẴN\n'
             f'   • <code>l [số_tiền]</code> hoặc <code>l max</code> - LẺ\n\n'
-            f'🏆 <b>Tỉ lệ: x1.95</b>'
+            f'🎲 T / X: Tổng 11–18 Tài / 3–10 Xỉu (bộ ba tính theo mặt, không quét sạch)\n'
+            f'🎯 C / L: Tổng chẵn Chẵn / lẻ Lẻ\n'
+            f'🔥 TL/TC/XL/XC: một lệnh kết hợp hai cửa — phải thắng cả hai mới ăn · trả x3.2\n'
+            f'👑 A1–A6: chọn bộ ba • D4–D17: tổng điểm (tổng 3/18 xin đặt A1/A6)\n'
+            f'🥷 Ẩn danh: TT · XX · CC · LL — nhắn riêng FB88(VD TT 5000). Nhóm hiện Ẩn Danh, không hiện tên. Chỉ nhóm Tài Xỉu chính.\n'
+            f'❗️ Min 1.000. Không đặt ngược cửa: Tài↔Xỉu, Chẵn↔Lẻ; cửa kết hợp xung đột với cửa ngược. Vẫn có thể đặt tách T+L. Max/người mỗi cửa 10.000.000（kết hợp 5.000.000）· Max cửa 50.000.000（kết hợp 25.000.000）; A/D mỗi số giới hạn riêng\n\n'
+            f'🥇 <b>Hũ Tài Xỉu</b>\n'
+            f'1️⃣ Phiên nhà cái có lời → góp 1% vào hũ nhóm đó\n'
+            f'2️⃣ Ra Bão 666 → trả 50% hũ hiện tại theo tỉ lệ cược phiên\n'
+            f'3️⃣ Cược cộng dồn trong phiên đủ 10.000 mới được chia hũ (thắng hay thua đều tính); lệnh nhỏ hơn vẫn góp hũ\n'
+            f'🎁 Tiền vào số dư ngay · Cược lại x1\n'
+            f'🔥 Giờ vàng (13:00–14:00 & 21:00–22:00): hũ +888K; nạp thêm trong giờ này cũng tặng 5%; hết giờ thu phần cộng thêm, hũ gốc giữ nguyên\n'
+            f'🎉 Ra Bão 111–666: TOP 3 cược phiên nhận Code Bão (mệnh giá = mặt × 1111). Vào TOP là có mã, hôm nay vào mấy trận đổi bấy nhiêu. Chưa nạp cũng đổi được.\n\n'
+            f'📣 Kết quả cược và trả thưởng sẽ được FB88 báo riêng cho bạn.'
         )
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         return
@@ -3208,11 +3483,43 @@ application.add_handler(CommandHandler("xd4", xd4_cmd))
 application.add_handler(CommandHandler("txmd5", txmd5_cmd))
 application.add_handler(CommandHandler("group_status", group_status_cmd))
 
+# Lệnh cược cơ bản
 application.add_handler(CommandHandler("t", bet_tai_group))
 application.add_handler(CommandHandler("x", bet_xiu_group))
 application.add_handler(CommandHandler("c", bet_chan_group))
 application.add_handler(CommandHandler("l", bet_le_group))
 
+# Lệnh cược kết hợp
+application.add_handler(CommandHandler("tl", bet_tl_group))
+application.add_handler(CommandHandler("tc", bet_tc_group))
+application.add_handler(CommandHandler("xl", bet_xl_group))
+application.add_handler(CommandHandler("xc", bet_xc_group))
+
+# Lệnh cược bộ ba
+application.add_handler(CommandHandler("a1", bet_a1_group))
+application.add_handler(CommandHandler("a2", bet_a2_group))
+application.add_handler(CommandHandler("a3", bet_a3_group))
+application.add_handler(CommandHandler("a4", bet_a4_group))
+application.add_handler(CommandHandler("a5", bet_a5_group))
+application.add_handler(CommandHandler("a6", bet_a6_group))
+
+# Lệnh cược tổng điểm
+application.add_handler(CommandHandler("d4", bet_d4_group))
+application.add_handler(CommandHandler("d5", bet_d5_group))
+application.add_handler(CommandHandler("d6", bet_d6_group))
+application.add_handler(CommandHandler("d7", bet_d7_group))
+application.add_handler(CommandHandler("d8", bet_d8_group))
+application.add_handler(CommandHandler("d9", bet_d9_group))
+application.add_handler(CommandHandler("d10", bet_d10_group))
+application.add_handler(CommandHandler("d11", bet_d11_group))
+application.add_handler(CommandHandler("d12", bet_d12_group))
+application.add_handler(CommandHandler("d13", bet_d13_group))
+application.add_handler(CommandHandler("d14", bet_d14_group))
+application.add_handler(CommandHandler("d15", bet_d15_group))
+application.add_handler(CommandHandler("d16", bet_d16_group))
+application.add_handler(CommandHandler("d17", bet_d17_group))
+
+# Admin commands
 application.add_handler(CommandHandler("naptien", naptien_admin))
 application.add_handler(CommandHandler("add", add))
 application.add_handler(CommandHandler("sub", sub))
