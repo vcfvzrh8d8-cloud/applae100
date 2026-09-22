@@ -641,7 +641,9 @@ def get_full_result_text(res_tx, res_cl):
     return f"{tx_text} {cl_text}"
 
 # ============================================================
-# TÀI XỈU ROOM - GAME CYCLE (ĐÃ SỬA LỖI HOÀN CHỈNH)
+# TÀI XỈU ROOM - GAME CYCLE (ĐÃ SỬA THEO YÊU CẦU)
+# Cứ 15s: XÓA tin nhắn cũ + GỬI tin nhắn mới (có tổng kết cược)
+# Các giây khác: EDIT tin nhắn cũ để cập nhật thời gian
 # ============================================================
 async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
     while True:
@@ -703,7 +705,63 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                 await asyncio.sleep(1)
                 current_second -= 1
 
-                if current_second % 10 == 0 or current_second in [5, 3, 2, 1]:
+                # ============ SỬA: CỨ 15s XÓA TIN + GỬI TIN MỚI ============
+                if current_second % 15 == 0 and current_second > 0:
+                    # Tổng kết cược
+                    tai_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "tai")
+                    xiu_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "xiu")
+                    chan_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "chan")
+                    le_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "le")
+                    tl_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "tl")
+                    tc_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "tc")
+                    xl_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "xl")
+                    xc_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "xc")
+                    total_players = len(set(b["user_id"] for b in game_state['bets'].values()))
+                    total_bet = tai_count + xiu_count + chan_count + le_count + tl_count + tc_count + xl_count + xc_count
+
+                    header = f'{ce("🚫")} <b>SẮP ĐÓNG CƯỢC!</b>' if current_second < 10 else f'{ce("⚡")} <b>ĐẶT CƯỢC NGAY!</b>'
+
+                    edit_text = (
+                        f'{ce("🎲")} <b>{get_bot_name()} - TÀI XỈU ROOM</b> {ce("🎲")}\n\n'
+                        f'{ce("✍️")} <b>Phiên #{session_id}</b>\n'
+                        f'{header}\n'
+                        f'{ce("⏰")} Thời gian còn lại: <code>{current_second}s</code>\n\n'
+                        f'{ce("💰")} <b>THỐNG KÊ TIỀN CƯỢC:</b>\n'
+                        f'{ce("🎲")} TÀI: <code>{fmt_money(tai_count)}đ</code>\n'
+                        f'{ce("🎲")} XỈU: <code>{fmt_money(xiu_count)}đ</code>\n'
+                        f'🔴 CHẴN: <code>{fmt_money(chan_count)}đ</code>\n'
+                        f'⚪ LẺ: <code>{fmt_money(le_count)}đ</code>\n'
+                    )
+                    if tl_count > 0:
+                        edit_text += f'{ce("🔥")} TL (TÀI+LẺ): <code>{fmt_money(tl_count)}đ</code>\n'
+                    if tc_count > 0:
+                        edit_text += f'{ce("🔥")} TC (TÀI+CHẴN): <code>{fmt_money(tc_count)}đ</code>\n'
+                    if xl_count > 0:
+                        edit_text += f'{ce("🔥")} XL (XỈU+LẺ): <code>{fmt_money(xl_count)}đ</code>\n'
+                    if xc_count > 0:
+                        edit_text += f'{ce("🔥")} XC (XỈU+CHẴN): <code>{fmt_money(xc_count)}đ</code>\n'
+                    edit_text += (
+                        f'━━━━━━━━━━━━━━━━━━━━━\n'
+                        f'{ce("📊")} <b>TỔNG CƯỢC:</b> <code>{fmt_money(total_bet)}đ</code>\n'
+                        f'{ce("👥")} Tổng người chơi: <code>{total_players}</code>\n'
+                        f'{ce("🎁")} Hũ jackpot: <code>{fmt_money(jackpot_now)}đ</code>'
+                    )
+
+                    # XÓA tin nhắn cũ + GỬI tin nhắn mới
+                    try:
+                        await bot.delete_message(chat_id, current_msg_id)
+                    except Exception as e:
+                        print(f"Lỗi xóa tin nhắn cũ (bỏ qua): {e}")
+
+                    try:
+                        new_msg = await bot.send_message(chat_id, edit_text, parse_mode=ParseMode.HTML)
+                        current_msg_id = new_msg.message_id
+                        game_state["message_id"] = current_msg_id
+                    except Exception as e:
+                        print(f"Lỗi gửi tin nhắn mới (bỏ qua): {e}")
+
+                # ============ CÁC GIÂY KHÁC: EDIT TIN NHẮN ============
+                else:
                     tai_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "tai")
                     xiu_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "xiu")
                     chan_count = sum(b["amount"] for b in game_state['bets'].values() if b["choice"] == "chan")
@@ -729,7 +787,6 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                         f'{ce("🎁")} Hũ jackpot: <code>{fmt_money(jackpot_now)}đ</code>'
                     )
                     
-                    # DÙNG edit_message_text (AN TOÀN HƠN delete + send)
                     try:
                         await bot.edit_message_text(
                             chat_id=chat_id,
@@ -2041,6 +2098,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ============================================================
 # GROUP MESSAGE HANDLER
+# XỬ LÝ TẤT CẢ LỆNH ĐẶT CƯỢC TRONG NHÓM (KHÔNG CẦN DẤU /)
 # ============================================================
 async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
@@ -2068,6 +2126,7 @@ async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     fake_ctx = FakeCtx(ctx.bot, parts[1:], ctx.user_data, ctx.chat_data, update.message)
     
+    # TẤT CẢ LỆNH ĐẶT CƯỢC (KHÔNG CẦN DẤU /)
     bet_commands = {
         "t": "tai", "tai": "tai",
         "x": "xiu", "xiu": "xiu",
@@ -2084,6 +2143,7 @@ async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await bet_group_handler(update, fake_ctx, choice)
         return
     
+    # ẨN DANH
     anon_commands = {
         "tt": "tai", "xx": "xiu", "cc": "chan", "ll": "le"
     }
@@ -3395,41 +3455,8 @@ application.add_handler(CommandHandler("xd4", xd4_cmd))
 application.add_handler(CommandHandler("txmd5", txmd5_cmd))
 application.add_handler(CommandHandler("group_status", group_status_cmd))
 
-# Lệnh cược cơ bản
-application.add_handler(CommandHandler("t", bet_tai_group))
-application.add_handler(CommandHandler("x", bet_xiu_group))
-application.add_handler(CommandHandler("c", bet_chan_group))
-application.add_handler(CommandHandler("l", bet_le_group))
-
-# Lệnh cược kết hợp
-application.add_handler(CommandHandler("tl", bet_tl_group))
-application.add_handler(CommandHandler("tc", bet_tc_group))
-application.add_handler(CommandHandler("xl", bet_xl_group))
-application.add_handler(CommandHandler("xc", bet_xc_group))
-
-# Lệnh cược bộ ba
-application.add_handler(CommandHandler("a1", bet_a1_group))
-application.add_handler(CommandHandler("a2", bet_a2_group))
-application.add_handler(CommandHandler("a3", bet_a3_group))
-application.add_handler(CommandHandler("a4", bet_a4_group))
-application.add_handler(CommandHandler("a5", bet_a5_group))
-application.add_handler(CommandHandler("a6", bet_a6_group))
-
-# Lệnh cược tổng điểm
-application.add_handler(CommandHandler("d4", bet_d4_group))
-application.add_handler(CommandHandler("d5", bet_d5_group))
-application.add_handler(CommandHandler("d6", bet_d6_group))
-application.add_handler(CommandHandler("d7", bet_d7_group))
-application.add_handler(CommandHandler("d8", bet_d8_group))
-application.add_handler(CommandHandler("d9", bet_d9_group))
-application.add_handler(CommandHandler("d10", bet_d10_group))
-application.add_handler(CommandHandler("d11", bet_d11_group))
-application.add_handler(CommandHandler("d12", bet_d12_group))
-application.add_handler(CommandHandler("d13", bet_d13_group))
-application.add_handler(CommandHandler("d14", bet_d14_group))
-application.add_handler(CommandHandler("d15", bet_d15_group))
-application.add_handler(CommandHandler("d16", bet_d16_group))
-application.add_handler(CommandHandler("d17", bet_d17_group))
+# KHÔNG ĐĂNG KÝ CommandHandler cho lệnh cược nữa
+# Vì lệnh cược trong nhóm là text thường (không có dấu /), đã xử lý trong handle_group_message
 
 # Admin commands
 application.add_handler(CommandHandler("naptien", naptien_admin))
