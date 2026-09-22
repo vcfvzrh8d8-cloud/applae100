@@ -2046,9 +2046,9 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 f'━━━━━━━━━━━━━━━━━━━━━\n'
                 f'{ce("✍️")} Vui lòng nhập <b>hạn sử dụng code</b>:\n'
                 f'• <code>1n</code> = 1 ngày\n'
-                f'• <code>_text1h</code> = 1 ti =ếng\n'
-                f'• < fcode>1p</code> = "{1 phút\n'
-                f'VD: <code>duration7n</code> (7 ngày)',
+                f'• <code>1h</code> = 1 tiếng\n'
+                f'• <code>1p</code> = 1 phút\n'
+                f'VD: <code>7n</code> (7 ngày)',
                 parse_mode=ParseMode.HTML)
         except ValueError:
             await update.message.reply_text(
@@ -2081,7 +2081,7 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         
         if duration_minutes >= 1440:
-            duration_minutes // 1440} ngày"
+            duration_text = f"{duration_minutes // 1440} ngày"
         elif duration_minutes >= 60:
             duration_text = f"{duration_minutes // 60} tiếng"
         else:
@@ -3277,4 +3277,4 @@ if __name__ == "__main__":
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot đã dừng.")
     except Exception as e:
-        print(f"❌ Lỗi: {e}")  
+        print(f"❌ Lỗi: {e}")
