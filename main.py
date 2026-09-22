@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters, CallbackQueryHandler
 from telegram.constants import ParseMode
 import psycopg2
@@ -93,6 +93,13 @@ CUSTOM_EMOJI = {
     "🔮": "5278651867780377852",
     "🐯": "5456463412393342595",
     "🐉": "5395493912344353272",
+    # === EMOJI MỚI THÊM TỪ MESSAGE ===
+    "🫵": "5461098492216752942",
+    "😮‍💨": "5192886773948107844",
+    "🤕": "5350584327946127806",
+    "😯": "5350392879778908359",
+    "🥸": "5391112412445288650",
+    "😃": "5276450615436787319",
 }
 
 def ce(emoji: str) -> str:
@@ -460,7 +467,6 @@ def sub_money(uid, amt, note="withdraw"):
     return True
 
 def add_bonus_with_requirement(user_id, bonus_amount, required_multiplier=2):
-    # Yêu cầu x2 vòng cược tổng số dư theo yêu cầu mới
     required_bet = bonus_amount * required_multiplier
     now_str = get_vietnam_datetime_db()
     query("DELETE FROM user_bonus WHERE user_id=%s", (user_id,))
@@ -531,7 +537,6 @@ def gen_code():
     return ''.join(random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(8))
 
 def get_deposit_info(user_id, amount=0):
-    # Tạo QR với số tiền cụ thể nếu có
     qr_url = f"https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-qr_only.png?amount={amount}&addInfo=Ndech%20{user_id}&accountName={ACCOUNT_NAME}"
     caption = (
         f'{ce("💳")} <b>THÔNG TIN NẠP TIỀN</b>\n\n'
@@ -705,7 +710,6 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                 f'{ce("🔒")} <b>ĐÃ ĐÓNG CƯỢC PHIÊN #{session_id}!</b>\n{ce("⏰")} Đang lắc 3 xúc xắc...',
                 parse_mode=ParseMode.HTML)
 
-            # CHỈ CÒN 3 XÚC XẮC
             d1 = await bot.send_dice(chat_id, emoji="🎲")
             d2 = await bot.send_dice(chat_id, emoji="🎲")
             d3 = await bot.send_dice(chat_id, emoji="🎲")
@@ -786,7 +790,6 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                                 parse_mode=ParseMode.HTML)
                         except:
                             pass
-                    # RESET HŨ VỀ 100.000
                     update_jackpot(100000)
                     jackpot_amount = 100000
             elif count_1 >= 3:
@@ -807,7 +810,6 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
                                 parse_mode=ParseMode.HTML)
                         except:
                             pass
-                    # RESET HŨ VỀ 100.000
                     update_jackpot(100000)
                     jackpot_amount = 100000
 
@@ -1043,7 +1045,7 @@ async def play_xucxac_don(update, ctx, choice_code, amount):
         parse_mode=ParseMode.HTML)
 
 # ============================================================
-# GAME LONG HỔ - ĐÃ SỬA LỖI TREO
+# GAME LONG HỔ
 # ============================================================
 async def play_longho(update, ctx, choice, amount):
     uid = update.effective_user.id
@@ -1056,7 +1058,6 @@ async def play_longho(update, ctx, choice, amount):
     
     msg_status = await update.message.reply_text(f'{ce("🎲")} <b>ĐANG CHIA BÀI...</b>', parse_mode=ParseMode.HTML)
     
-    # SỬA LỖI TREO: Thêm timeout cho quá trình chia bài
     try:
         await asyncio.wait_for(asyncio.sleep(2), timeout=5.0)
     except asyncio.TimeoutError:
@@ -1693,7 +1694,6 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return await user_reply.reply_text(f'{ce("🚫")} Tính năng NẠP TIỀN đã bị khóa!', parse_mode=ParseMode.HTML)
         if check_mt('mt_nap') and uid not in ADMIN_IDS:
             return await user_reply.reply_text(f'{ce("⚙️")} Nạp Tiền đang bảo trì!', parse_mode=ParseMode.HTML)
-        # Hiển thị menu nạp tiền với các nút chọn mệnh giá
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("20k", callback_data="dep_20000"), InlineKeyboardButton("50k", callback_data="dep_50000"), InlineKeyboardButton("100k", callback_data="dep_100000")],
             [InlineKeyboardButton("200k", callback_data="dep_200000"), InlineKeyboardButton("500k", callback_data="dep_500000"), InlineKeyboardButton("1m", callback_data="dep_1000000")],
@@ -1702,11 +1702,11 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
         caption = (
-            f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b>\n\n'
-            f'{ce("📝")} <b>Lệnh nạp:</b> <code>/nap [số tiền]</code>\n'
+            f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b> {ce("😃")}\n\n'
+            f'{ce("📝")} <b>Lệnh nạp:</b> <code>/nap [số tiền]</code> {ce("✍️")}\n'
             f'{ce("📝")} <b>Ví dụ:</b> <code>/nap 50000</code>\n'
             f'<code>/nap 50k</code>   <code>/nap 5m</code>\n\n'
-            f'{ce("⚡")} <i>Chọn mệnh giá bên dưới hoặc nhập lệnh /nap số tiền</i>'
+            f'{ce("⚡")} <i>Chọn mệnh giá bên dưới hoặc nhập lệnh /nap số tiền</i> {ce("🫵")}'
         )
         qr_url, _ = get_deposit_info(uid, 0)
         return await user_reply.reply_photo(photo=qr_url, caption=caption, reply_markup=kb, parse_mode=ParseMode.HTML)
@@ -1722,7 +1722,9 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🎲 TÀI XỈU MD5", callback_data="menu_taixiumd5")],
         ])
         return await user_reply.reply_text(
-            f'{ce("🎲")} <b>DANH SÁCH TRÒ CHƠI</b>\nVui lòng chọn game:',
+            f'{ce("🎲")} <b>DANH SÁCH TRÒ CHƠI</b>\n'
+            f'{ce("😃")} Chúc bạn chơi vui vẻ! {ce("✍️")}\n\n'
+            f'{ce("🫵")} Vui lòng chọn game bên dưới: {ce("😮‍💨")}',
             reply_markup=kb, parse_mode=ParseMode.HTML)
 
     if txt == "💸 RÚT TIỀN":
@@ -1840,10 +1842,9 @@ async def nap_tien_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except:
             pass
         
-        # Gửi thông báo nạp tiền thành công với nút nhận/từ chối khuyến mãi
-        bonus_amount = int(amount * 0.10)  # 10% khuyến mãi
+        bonus_amount = int(amount * 0.10)
         if bonus_amount > 0:
-            required_bet = bonus_amount * 2  # Yêu cầu x2 vòng cược
+            required_bet = bonus_amount * 2
             keyboard = InlineKeyboardMarkup([[
                 InlineKeyboardButton("🎁 NHẬN KHUYẾN MÃI", callback_data=f"accept_bonus_{target_id}_{bonus_amount}_{required_bet}"),
                 InlineKeyboardButton("❌ TỪ CHỐI", callback_data=f"reject_bonus_{target_id}")
@@ -2185,7 +2186,6 @@ async def set_bot_name_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 @admin_only
 async def sethu_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Admin chỉnh số tiền trong hũ (jackpot)"""
     if not ctx.args:
         current_jackpot = get_jackpot()
         return await update.message.reply_text(
@@ -2197,7 +2197,6 @@ async def sethu_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode=ParseMode.HTML)
     try:
         arg = ctx.args[0].lower().replace(".", "").replace(",", "")
-        # Hỗ trợ đơn vị: k (nghìn), m (triệu), ty/tỷ (tỷ)
         if arg.endswith("ty") or arg.endswith("tỷ"):
             amount = int(float(arg.replace("ty", "").replace("tỷ", "")) * 1000000000)
         elif arg.endswith("m"):
@@ -2558,11 +2557,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
         caption = (
-            f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b>\n\n'
-            f'{ce("📝")} <b>Lệnh nạp:</b> <code>/nap [số tiền]</code>\n'
+            f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b> {ce("😃")}\n\n'
+            f'{ce("📝")} <b>Lệnh nạp:</b> <code>/nap [số tiền]</code> {ce("✍️")}\n'
             f'{ce("📝")} <b>Ví dụ:</b> <code>/nap 50000</code>\n'
             f'<code>/nap 50k</code>   <code>/nap 5m</code>\n\n'
-            f'{ce("⚡")} <i>Chọn mệnh giá bên dưới hoặc nhập lệnh /nap số tiền</i>'
+            f'{ce("⚡")} <i>Chọn mệnh giá bên dưới hoặc nhập lệnh /nap số tiền</i> {ce("🫵")}'
         )
         qr_url, _ = get_deposit_info(uid, 0)
         return await q.message.edit_media(
@@ -2747,12 +2746,8 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if d.startswith("admin_") or d.startswith("mt_") or d.startswith("user_"):
         if d.startswith("mt_toggle_") or d in ["mt_turnoff_all", "mt_turnon_all"]:
             return await handle_mt_toggle_callback(update, ctx)
-        if d.startswith("user_"):
-            return await handle_user_maintenance_callback(update, ctx)
         if uid not in ADMIN_IDS:
             return await q.answer("❌ Không có quyền!", show_alert=True)
-        if d == "admin_back":
-            return await quanlyadmin_cmd(update, ctx)
 
     if d == "confirm_reset_all_final":
         if uid not in ADMIN_IDS:
@@ -2878,22 +2873,59 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if act == "ok":
             query("UPDATE withdraw_history SET status='success', admin_id=%s WHERE user_id=%s AND amount=%s AND status='pending'", (uid, u_id, amt))
             try:
-                await ctx.bot.send_message(chat_idền=LOG_GROUP_ID,
-                    text=f đ'{ce("📤")} <b>ãRÚT TIỀN</ hob>\n{ce("àn👥")} <code>{u_id}</code>\ lạin{ce("💰")} <code>{fmt_money(amt)}đ</code>\n{ce("✅")} Đã duyệt!',
-                    parse_mode=ParseMode.HTML)
+                await ctx.bot.send_message(
+                    chat_id=LOG_GROUP_ID,
+                    text=(
+                        f'{ce("📤")} <b>THÔNG BÁO RÚT TIỀN</b>\n'
+                        f'{ce("👥")} ID: <code>{u_id}</code>\n'
+                        f'{ce("💰")} Số tiền: <code>{fmt_money(amt)}đ</code>\n'
+                        f'{ce("✅")} Đã duyệt!'
+                    ),
+                    parse_mode=ParseMode.HTML
+                )
+            except Exception as e:
+                print(f"Lỗi gửi LOG_GROUP: {e}")
+            try:
+                await ctx.bot.send_message(
+                    u_id,
+                    f'{ce("✅")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> đã được duyệt!',
+                    parse_mode=ParseMode.HTML
+                )
             except:
                 pass
-            await ctx.bot.send_message(u_id,
-                f'{ce("✅")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> đã được duyệt!',
-                parse_mode=ParseMode.HTML)
-            await q.edit_message_text(f'{ce("✅")} ĐÃ DUYỆT ID {u_id}', parse_mode=ParseMode.HTML)
+            await q.edit_message_text(
+                f'{ce("✅")} ĐÃ DUYỆT ID <code>{u_id}</code> | <code>{fmt_money(amt)}đ</code>',
+                parse_mode=ParseMode.HTML
+            )
         else:
             query("UPDATE withdraw_history SET status='rejected', admin_id=%s, admin_note='Từ chối' WHERE user_id=%s AND amount=%s AND status='pending'", (uid, u_id, amt))
             add_money(u_id, amt, "Hoàn tiền rút")
-            await ctx.bot.send_message(u_id,
-                f'{ce("❌")} Yêu cầu rút bị từ chối. Ti.',
-                parse_mode=ParseMode.HTML)
-            await q.edit_message_text(f'{ce("❌")} TỪ CHỐI ID {u_id}', parse_mode=ParseMode.HTML)
+            try:
+                await ctx.bot.send_message(
+                    chat_id=LOG_GROUP_ID,
+                    text=(
+                        f'{ce("❌")} <b>THÔNG BÁO TỪ CHỐI RÚT</b>\n'
+                        f'{ce("👥")} ID: <code>{u_id}</code>\n'
+                        f'{ce("💰")} Số tiền: <code>{fmt_money(amt)}đ</code>\n'
+                        f'{ce("🔄")} Đã hoàn tiền về ví!'
+                    ),
+                    parse_mode=ParseMode.HTML
+                )
+            except Exception as e:
+                print(f"Lỗi gửi LOG_GROUP: {e}")
+            try:
+                await ctx.bot.send_message(
+                    u_id,
+                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> bị từ chối.\n'
+                    f'{ce("🔄")} Tiền đã được hoàn về số dư của bạn.',
+                    parse_mode=ParseMode.HTML
+                )
+            except:
+                pass
+            await q.edit_message_text(
+                f'{ce("❌")} TỪ CHỐI ID <code>{u_id}</code> | <code>{fmt_money(amt)}đ</code>',
+                parse_mode=ParseMode.HTML
+            )
         return
 
 # ============================================================
@@ -2947,10 +2979,10 @@ application.add_handler(CommandHandler("taocode", tao_code))
 application.add_handler(CommandHandler("taocodeall", taocodeall_cmd))
 application.add_handler(CommandHandler("xoacode", xoacode_cmd))
 application.add_handler(CommandHandler("kmnap", kmnap_cmd))
-application.add_handler(CommandHandler("kmnapvc", kmnapvc_cmd))
-application.add_handler(CommandHandler("checkprogressadmin", admin_check_bet_progress_cmd))
-application.add_handler(CommandHandler("baotri", baotri_cmd))
-application.add_handler(CommandHandler("baotriht", baotri_he_thong_cmd))
+application.add_handler(CommandHandler("kmnapvc", kmnapvcapplication_cmd))
+application.add_handler(CommandHandler(".addcheckprogressadmin", admin_check_handler_bet_progress_cmd))
+application(.add_handler(CommandHandler("baotriCommand", baotri_cmd))
+Handler("baotriht", baotri_he_thong_cmd))
 application.add_handler(CommandHandler("baotriall", baotri_hethong_cmd))
 application.add_handler(CommandHandler("baotritc", baotri_tong_cong_cmd))
 application.add_handler(CommandHandler("tatroom", tatroom_cmd))
