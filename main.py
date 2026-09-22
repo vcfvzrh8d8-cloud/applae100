@@ -139,7 +139,7 @@ ACCOUNT_NO = "0003456712345"
 ACCOUNT_NAME = "LY THI CHAM"
 
 _bot_instance = None
-GROUP_IDS = [-1004322118515]
+GROUP_IDS = [-1003663678808]
 
 group_games = {}
 room_betting_enabled = {}
