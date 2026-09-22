@@ -88,18 +88,17 @@ CUSTOM_EMOJI = {
     "✍️": "5258500400918587241",
     "🆔": "5443038326535759644",
     "📜": "6098288123580518916",
-    "   📞": "523798878816410750 "0",
-    "🛡": "🐉5400250414929041085",
-":    "🔮": "5278651867780377852",
+    "📞": "5237988788164107500",
+    "🛡": "5400250414929041085",
+    "🔮": "5278651867780377852",
     "🐯": "5456463412393342595",
- "5395493912344353272",
+    "🐉": "5395493912344353272",
     "🫵": "5461098492216752942",
     "😮‍💨": "5192886773948107844",
     "🤕": "5350584327946127806",
     "😯": "5350392879778908359",
     "🥸": "5391112412445288650",
     "😃": "5276450615436787319",
-    # === EMOJI PREMIUM MỚI NHẬN ===
     "🥷": "5217514674769120391",
     "👤": "5332455502917949981",
     "🏦": "5400250414929041085",
@@ -319,7 +318,7 @@ games_to_keep = [
     (8, "TÀI XỈU MD5"),
 ]
 for gid, name in games_to_keep:
-    res = query("SELECT 1 FROM game_rates id WHERE=%s", (gid,))
+    res = query("SELECT 1 FROM game_rates WHERE id=%s", (gid,))
     if not res:
         query("INSERT INTO game_rates VALUES(%s, %s, 10)", (gid, name))
     else:
@@ -518,7 +517,7 @@ async def check_and_notify_bet_completion(user_id: int, current_bet: int, requir
                 f'{ce("🎉")} <b>CHÚC MỪNG! BẠN ĐÃ HOÀN THÀNH YÊU CẦU CƯỢC!</b> {ce("🎉")}\n'
                 f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
                 f'{ce("💰")} <b>Tiền khuyến mãi đã nhận:</b> <code>+{fmt_money(bonus_amount)}đ</code>\n'
-                f'{ce("🎯")} <b>Yêu cầu cược:</b> <code>{fmt_money(req_bet)}đ</code> (x2 vòng)\n'
+                f'{ce("🎯")} <b>Yêu cầu cược:</b> <code>{fmt_money(req_bet)}đ</code>\n'
                 f'{ce("✅")} <b>Tổng cược đã thực hiện:</b> <code>{fmt_money(curr_bet)}đ</code>\n'
                 f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
                 f'{ce("🔓")} <b>Bạn đã có thể rút tiền bình thường!</b>'
@@ -532,7 +531,7 @@ async def check_and_notify_bet_completion(user_id: int, current_bet: int, requir
             return True
     return False
 
-def update_bet_progress(user_id: int':, bet_amount: int):
+def update_bet_progress(user_id: int, bet_amount: int):
     bonus_data = query("SELECT required_bet, current_bet FROM user_bonus WHERE user_id=%s", (user_id,))
     if not bonus_data or bonus_data[0][0] == 0:
         return False
@@ -553,7 +552,7 @@ def get_bet_progress_status(user_id: int):
     remaining = required_bet - current_bet
     return {
         'bonus_amount': bonus_amount,
-        'required_bet required_bet,
+        'required_bet': required_bet,
         'current_bet': current_bet,
         'percent': percent,
         'remaining': remaining,
@@ -639,7 +638,7 @@ def get_full_result_text(res_tx, res_cl):
     tx_text = "TÀI" if res_tx == "tai" else "XỈU"
     cl_text = "CHẴN" if res_cl == "chan" else "LẺ"
     return f"{tx_text} {cl_text}"
- # ============================================================
+# ============================================================
 # TÀI XỈU ROOM - GAME CYCLE
 # ============================================================
 async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
@@ -2047,9 +2046,9 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 f'━━━━━━━━━━━━━━━━━━━━━\n'
                 f'{ce("✍️")} Vui lòng nhập <b>hạn sử dụng code</b>:\n'
                 f'• <code>1n</code> = 1 ngày\n'
-                f'• <code>1h</code> = 1 tiếng\n'
-                f'• <code>1p</code> = 1 phút\n'
-                f'VD: <code>7n</code> (7 ngày)',
+                f'• <code>_text1h</code> = 1 ti =ếng\n'
+                f'• < fcode>1p</code> = "{1 phút\n'
+                f'VD: <code>duration7n</code> (7 ngày)',
                 parse_mode=ParseMode.HTML)
         except ValueError:
             await update.message.reply_text(
@@ -2082,7 +2081,7 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         
         if duration_minutes >= 1440:
-            duration_text = f"{duration_minutes // 1440} ngày"
+            duration_minutes // 1440} ngày"
         elif duration_minutes >= 60:
             duration_text = f"{duration_minutes // 60} tiếng"
         else:
@@ -2102,10 +2101,10 @@ async def handle_pending_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'┃\n'
             f'┃ {ce("⏰")} <b>Hạn sử dụng:</b> <code>{duration_text}</code>\n'
             f'┃ <i>(Hết hạn: {expiry_str})</i>\n'
-            f'nh┗━━━━━━━━━━━━━━━━━━━━━━━━━\ <n\n'
-            f'{ce("📌")code} <b>Hướng dẫn sử dụng:</b>\n'
-           >/ f'• Nạp đủ <code>{fmt_money(required_amount)}đ</code> với nội dung <code>Ndech {uid}</code>\n'
-            f'• Sau khi nạp, dcodeùng lệ {code_str}</code> để nhận thưởng\n'
+            f'┗━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
+            f'{ce("📌")} <b>Hướng dẫn sử dụng:</b>\n'
+            f'• Nạp đủ <code>{fmt_money(required_amount)}đ</code> với nội dung <code>Ndech {uid}</code>\n'
+            f'• Sau khi nạp, dùng lệnh <code>/code {code_str}</code> để nhận thưởng\n'
             f'• Cần cược đủ <code>x{wager}</code> vòng trước khi rút',
             parse_mode=ParseMode.HTML
         )
@@ -2871,11 +2870,9 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     d = q.data
     uid = q.from_user.id
 
-    # Xử lý nút chọn cửa
     if d.startswith("lh_choice_") or d.startswith("bcr_choice_"):
         return await handle_game_choice_callback(update, ctx)
 
-    # Xử lý nút nạp tiền
     if d.startswith("dep_"):
         if d == "dep_support":
             return await q.message.edit_text(
@@ -2918,7 +2915,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb
         )
 
-    # MENU GAME
     if d == "menu_taixiu_room":
         msg = (
             f'🎲 <b>TÀI XỈU ROOM</b> 🎲\n\n'
@@ -3028,11 +3024,9 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
         return
 
-    # CALLBACK ADMIN
     if d.startswith("mt_toggle_") or d in ["mt_turnoff_all", "mt_turnon_all"]:
         return await handle_mt_toggle_callback(update, ctx)
 
-    # HISTORY
     if d == "his_deposit":
         data = query("SELECT amount, time FROM deposit_history WHERE user_id=%s AND status='success' ORDER BY time DESC LIMIT 10", (uid,))
         text = f'{ce("📥")} <b>10 GIAO DỊCH NẠP GẦN NHẤT:</b>\n\n'
@@ -3054,7 +3048,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 text += f'{status_icon} <code>{fmt_money(row[0])}đ</code> | {row[1]} | <i>{row[2]}</i>\n'
         return await ctx.bot.send_message(uid, text, parse_mode=ParseMode.HTML)
 
-    # BONUS
     if d.startswith("accept_bonus_"):
         parts = d.split("_")
         target_id = int(parts[2])
@@ -3084,7 +3077,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode=ParseMode.HTML)
         return
 
-    # ADMIN PAGES
     if d.startswith("adm_page_"):
         if uid not in ADMIN_IDS:
             return
@@ -3134,7 +3126,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.delete()
         return
 
-    # DUYỆT RÚT
     if d.startswith("ok_") or d.startswith("no_"):
         if uid not in ADMIN_IDS:
             return
@@ -3203,7 +3194,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ============================================================
 application = ApplicationBuilder().token(TOKEN).build()
 
-# User commands
 application.add_handler(CommandHandler("start", start))
 application.add_handler(CommandHandler("lienket", lien_ket))
 application.add_handler(CommandHandler("rut", rut))
@@ -3218,13 +3208,11 @@ application.add_handler(CommandHandler("xd4", xd4_cmd))
 application.add_handler(CommandHandler("txmd5", txmd5_cmd))
 application.add_handler(CommandHandler("group_status", group_status_cmd))
 
-# Group bet commands
 application.add_handler(CommandHandler("t", bet_tai_group))
 application.add_handler(CommandHandler("x", bet_xiu_group))
 application.add_handler(CommandHandler("c", bet_chan_group))
 application.add_handler(CommandHandler("l", bet_le_group))
 
-# Admin commands
 application.add_handler(CommandHandler("naptien", naptien_admin))
 application.add_handler(CommandHandler("add", add))
 application.add_handler(CommandHandler("sub", sub))
@@ -3261,7 +3249,6 @@ application.add_handler(CommandHandler("baotriall", baotri_hethong_cmd))
 application.add_handler(CommandHandler("baotritc", baotri_tong_cong_cmd))
 application.add_handler(CommandHandler("tatroom", tatroom_cmd))
 
-# Callback + Message handlers
 application.add_handler(CallbackQueryHandler(handle_callback))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_group_message))
 
@@ -3290,4 +3277,4 @@ if __name__ == "__main__":
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot đã dừng.")
     except Exception as e:
-        print(f"❌ Lỗi: {e}")      
+        print(f"❌ Lỗi: {e}")  
