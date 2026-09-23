@@ -126,6 +126,7 @@ CUSTOM_EMOJI = {
     "step_1": "5415655814079723871",
     "step_2": "5375338737028841420",
     "step_3": "5382357040008021292",
+    "😆": "5375135722514685501" # Icon mới từ JSON bạn gửi
 }
 
 E = [
@@ -1866,7 +1867,7 @@ async def history_pro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         msg = f'{ce("📜")} <b>LỊCH SỬ CHI TIẾT:</b>\n\n'
         for d in data:
-            icon = "➕" if d[0] > 0 else "➖"
+            icon = f'{ce("✅")}' if d[0] > 0 else f'{ce("❌")}' # Đã sửa dấu tích ở lịch sử
             msg += f'{icon} <code>{fmt_money(d[0])}đ</code> | {html.escape(d[1])} | <i>{d[2]}</i>\n'
         if len(msg) > 4000:
             for x in range(0, len(msg), 4000):
@@ -3239,6 +3240,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb
         )
 
+    # ĐÃ SỬA LỖI BẤM VÀO DANH SÁCH GAME KHÔNG PHẢN HỒI: Thêm các điều kiện xử lý callback cho menu game
     if d == "menu_taixiu_room":
         msg = (
             f'{ce_id(E[0])} <b>TÀI XỈU ROOM</b>\n\n'
@@ -3259,6 +3261,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[12])} Cược tất tay: T max hoặc C max\n\n'
             f'{ce_id(E[13])} Kết quả cược và trả thưởng sẽ được báo riêng.'
         )
+        await q.answer()
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         return
 
@@ -3278,6 +3281,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[25])} D6   ➤   x5  ➤ Xúc Xắc: 6\n\n'
             f'{ce_id(E[26])} <b>Cách chơi:</b> D1 10000 hoặc XXC 50000'
         )
+        await q.answer()
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
         return
 
@@ -3286,6 +3290,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🐯 CHỌN LONG", callback_data="lh_choice_long")],
             [InlineKeyboardButton("🐉 CHỌN HỔ", callback_data="lh_choice_ho")]
         ])
+        await q.answer()
         await q.message.edit_text(
             f'{ce_id(E[27])} <b>LONG HỔ</b>\n\n'
             f'{ce_id(E[28])} <b>Luật chơi:</b>\n'
@@ -3307,6 +3312,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[39])} <b>Một Đôi</b>: x2\n\n'
             f'{ce_id(E[40])} <b>Cách chơi:</b> /mp [số_tiền]'
         )
+        await q.answer()
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
         return
 
@@ -3316,6 +3322,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🏦 BANKER (x2)", callback_data="bcr_choice_banker")],
             [InlineKeyboardButton("⚖️ TIE (x9)", callback_data="bcr_choice_tie")]
         ])
+        await q.answer()
         await q.message.edit_text(
             f'{ce_id(E[41])} <b>BACCARAT</b>\n\n'
             f'{ce_id(E[42])} <b>Luật chơi:</b>\n'
@@ -3337,6 +3344,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[53])} <b>Tỉ lệ ăn: x1.95</b>\n\n'
             f'{ce_id(E[54])} <b>Cách chơi:</b> /xd4 [chan/le] [số_tiền]'
         )
+        await q.answer()
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
         return
 
@@ -3350,6 +3358,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[60])} <b>Tỉ lệ ăn: x1.95</b>\n\n'
             f'{ce_id(E[61])} <b>Cách chơi:</b> /txmd5 [tai/xiu/chan/le] [số_tiền]'
         )
+        await q.answer()
         await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
         return
 
@@ -3373,7 +3382,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             text += "Trống."
         else:
             for row in data:
-                status_icon = "✅" if row[1] == "success" else "❌" if row[1] == "rejected" else "⏳"
+                status_icon = f'{ce("✅")}' if row[1] == "success" else f'{ce("❌")}' if row[1] == "rejected" else f'{ce("⏰")}' # Đã sửa dấu tích
                 text += f'{status_icon} <code>{fmt_money(row[0])}đ</code> | {row[1]} | <i>{row[2]}</i>\n'
         return await ctx.bot.send_message(uid, text, parse_mode=ParseMode.HTML)
 
@@ -3504,7 +3513,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 print(f"Lỗi gửi LOG_GROUP: {e}")
             try:
-                # ĐÃ SỬA LỖI DẤU NGOẶC NHỌN THỪA Ở ĐÂY:
                 await ctx.bot.send_message(
                     u_id,
                     f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> bị từ chối.\n'
