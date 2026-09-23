@@ -62,7 +62,7 @@ CUSTOM_EMOJI = {
     "📎": "5305265301917549162",
     "🗑": "5372825386591732174",
     "🗓": "5413879192267805083",
-    "⌛": "5472026645659401564",
+    "⌛": "5386367538735104399", # Cập nhật icon đồng hồ lịch sử
     "🔜": "5440621591387980068",
     "🚀": "5372917041193828849",
     "🌈": "5409109841538994759",
@@ -70,14 +70,14 @@ CUSTOM_EMOJI = {
     "🌛": "5438362704878250587",
     "🎉": "5208541126583136130",
     "🏆": "5188344996356448758",
-    "👑": "5433758796289685818",
+    "👑": "5217822164362739968", # Cập nhật icon game 1
     "🚫": "5462882007451185227",
     "💳": "5445353829304387411",
     "🛒": "5400090058030075645",
     "📥": "5443127283898405358",
     "📤": "5445355530111437729",
     "⏰": "5386415655253730366",
-    "👀": "5210956306952758910",
+    "👀": "5210956306952758910", # Cập nhật icon lịch sử chi tiết
     "💵": "5409048419211682843",
     "🎁": "5203996991054432397",
     "💠": "5461151367559141950",
@@ -114,7 +114,7 @@ CUSTOM_EMOJI = {
     "⬅️": "5363896514655564837",
     "➡️": "5416117059207572332",
     "📣": "5298609030321691620",
-    "🛍": "5406683434124859552",
+    "🛍": "5406683434124859552", # Cập nhật icon game 5
     "🆓": "5406756500108501710",
     "✉️": "5253742260054409879",
     "😵": "5465137208878969279",
@@ -126,7 +126,15 @@ CUSTOM_EMOJI = {
     "step_1": "5415655814079723871",
     "step_2": "5375338737028841420",
     "step_3": "5382357040008021292",
-    "😆": "5375135722514685501"
+    "😆": "5375135722514685501",
+    # 7 Custom Icon Game mới cập nhật:
+    "game_icon_1": "5217822164362739968", # Tài Xỉu Room
+    "game_icon_2": "5386367538735104399", # Xúc Xắc Đơn
+    "game_icon_3": "5361741454685256344", # Long Hổ
+    "game_icon_4": "5422439311196834318", # Mini Poker
+    "game_icon_5": "5406683434124859552", # Baccarat
+    "game_icon_6": "5416041192905265756", # Xóc Đĩa 4 Vị
+    "game_icon_7": "5460755126761312667"  # Tài Xỉu MD5
 }
 
 E = [
@@ -1862,16 +1870,20 @@ async def history_pro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f'{ce("⚡")} <b>HỆ THỐNG ĐANG BẢO TRÌ TOÀN BỘ</b>', parse_mode=ParseMode.HTML)
         return
     data = query("SELECT amount, note, time FROM history WHERE user_id=%s ORDER BY time DESC LIMIT 20", (uid,))
+    
+    # Custom Emoji cho tiêu đề LỊCH SỬ CHI TIẾT: và đồng hồ ⏰
+    title_icon = ce_id("5210956306952758910") # ID 👀 yêu cầu
+    clock_icon = ce_id("5386367538735104399") # ID ⏰ yêu cầu
+    
     if not data:
-        await update.message.reply_text(f'{ce("📥")} Lịch sử trống.', parse_mode=ParseMode.HTML)
+        await update.message.reply_text(f'{title_icon} <b>LỊCH SỬ CHI TIẾT:</b>\n━━━━━━━━━━━━━━━━━━━━━\n{ce("📥")} Lịch sử trống.', parse_mode=ParseMode.HTML)
     else:
-        msg = f'{ce("📜")} <b>LỊCH SỬ CHI TIẾT:</b>\n'
+        msg = f'{title_icon} <b>LỊCH SỬ CHI TIẾT:</b>\n'
         msg += f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
         for d in data:
-            # Sử dụng custom emoji cho dấu + và -
             icon = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["✔️"]}">✔️</tg-emoji>' if d[0] > 0 else f'<tg-emoji emoji-id="{CUSTOM_EMOJI["❌"]}">❌</tg-emoji>'
             msg += f'{icon} <code>{fmt_money(abs(d[0]))}đ</code> | {html.escape(d[1])}\n'
-            msg += f'     <i>🕒 {d[2]}</i>\n'
+            msg += f'     <i>{clock_icon} {d[2]}</i>\n'
         msg += f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
         if len(msg) > 4000:
             for x in range(0, len(msg), 4000):
@@ -1986,7 +1998,6 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await user_reply.reply_photo(photo=qr_url, caption=caption, reply_markup=kb, parse_mode=ParseMode.HTML)
 
     if txt == "🛍 DANH SÁCH GAME":
-        # Sửa thành 2 game mỗi hàng ngang
         kb = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("😵 TÀI XỈU ROOM", callback_data="menu_taixiu_room"),
@@ -3253,10 +3264,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb
         )
 
-    # ĐÃ SỬA LỖI BẤM VÀO DANH SÁCH GAME KHÔNG PHẢN HỒI: Thêm các điều kiện xử lý callback cho menu game
+    # Đã sửa lỗi nút bấm game không phản hồi bằng cách bổ sung await q.answer() đầy đủ và áp dụng 7 ID icon game mới
     if d == "menu_taixiu_room":
+        await q.answer()
         msg = (
-            f'{ce_id(E[0])} <b>TÀI XỈU ROOM</b>\n\n'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_1"])} <b>TÀI XỈU ROOM</b>\n\n'
             f'{ce_id(E[1])} <b>Link vào phòng:</b>\n'
             f'https://t.me/ts68clmmxh\n\n'
             f'{ce_id(E[2])} <b>HƯỚNG DẪN:</b>\n'
@@ -3274,13 +3286,12 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[12])} Cược tất tay: T max hoặc C max\n\n'
             f'{ce_id(E[13])} Kết quả cược và trả thưởng sẽ được báo riêng.'
         )
-        await q.answer()
-        await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-        return
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
     if d == "menu_xucxac_don":
+        await q.answer()
         msg = (
-            f'{ce_id(E[14])} <b>XÚC XẮC TELEGRAM</b>\n\n'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_2"])} <b>XÚC XẮC TELEGRAM</b>\n\n'
             f'{ce_id(E[15])} <b>Thể lệ:</b>\n'
             f'{ce_id(E[16])} XXC  ➤   x1.95  ➤ Xúc Xắc: 2,4,6\n'
             f'{ce_id(E[17])} XXL  ➤   x1.95  ➤ Xúc Xắc: 1,3,5\n'
@@ -3294,18 +3305,16 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[25])} D6   ➤   x5  ➤ Xúc Xắc: 6\n\n'
             f'{ce_id(E[26])} <b>Cách chơi:</b> D1 10000 hoặc XXC 50000'
         )
-        await q.answer()
-        await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-        return
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
     if d == "menu_longho":
+        await q.answer()
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("🐯 CHỌN LONG", callback_data="lh_choice_long")],
             [InlineKeyboardButton("🐉 CHỌN HỔ", callback_data="lh_choice_ho")]
         ])
-        await q.answer()
-        await q.message.edit_text(
-            f'{ce_id(E[27])} <b>LONG HỔ</b>\n\n'
+        return await q.message.edit_text(
+            f'{ce_id(CUSTOM_EMOJI["game_icon_3"])} <b>LONG HỔ</b>\n\n'
             f'{ce_id(E[28])} <b>Luật chơi:</b>\n'
             f'{ce_id(E[29])} So sánh điểm 2 lá bài LONG và HỔ\n'
             f'{ce_id(E[30])} Bên nào điểm cao hơn thắng\n'
@@ -3313,11 +3322,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[32])} <b>Tỉ lệ ăn: x1.95</b>\n\n'
             f'{ce_id(E[33])} <b>Chọn cửa để đặt cược:</b>',
             reply_markup=kb, parse_mode=ParseMode.HTML)
-        return
 
     if d == "menu_minipoker":
+        await q.answer()
         msg = (
-            f'{ce_id(E[34])} <b>MINI POKER</b>\n\n'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_4"])} <b>MINI POKER</b>\n\n'
             f'{ce_id(E[35])} <b>Luật chơi:</b>\n'
             f'{ce_id(E[36])} <b>Tứ Quý</b> (4 lá cùng rank): x100\n'
             f'{ce_id(E[37])} <b>Bộ Ba</b> (3 lá cùng rank): x25\n'
@@ -3325,19 +3334,17 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[39])} <b>Một Đôi</b>: x2\n\n'
             f'{ce_id(E[40])} <b>Cách chơi:</b> /mp [số_tiền]'
         )
-        await q.answer()
-        await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-        return
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
     if d == "menu_baccarat":
+        await q.answer()
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("👤 PLAYER (x2)", callback_data="bcr_choice_player")],
             [InlineKeyboardButton("🏦 BANKER (x2)", callback_data="bcr_choice_banker")],
             [InlineKeyboardButton("⚖️ TIE (x9)", callback_data="bcr_choice_tie")]
         ])
-        await q.answer()
-        await q.message.edit_text(
-            f'{ce_id(E[41])} <b>BACCARAT</b>\n\n'
+        return await q.message.edit_text(
+            f'{ce_id(CUSTOM_EMOJI["game_icon_5"])} <b>BACCARAT</b>\n\n'
             f'{ce_id(E[42])} <b>Luật chơi:</b>\n'
             f'{ce_id(E[43])} So sánh điểm PLAYER và BANKER\n'
             f'{ce_id(E[44])} Điểm gần 9 nhất thắng\n'
@@ -3345,11 +3352,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[46])} <b>Tỉ lệ:</b> PLAYER x2, BANKER x2, TIE x9\n\n'
             f'{ce_id(E[47])} <b>Chọn cửa để đặt cược:</b>',
             reply_markup=kb, parse_mode=ParseMode.HTML)
-        return
 
     if d == "menu_xocdia4":
+        await q.answer()
         msg = (
-            f'{ce_id(E[48])} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_6"])} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
             f'{ce_id(E[49])} <b>Luật chơi:</b>\n'
             f'{ce_id(E[50])} 4 đồng xu được xóc ngẫu nhiên\n'
             f'{ce_id(E[51])} Chẵn: 0, 2, 4 đỏ\n'
@@ -3357,13 +3364,12 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[53])} <b>Tỉ lệ ăn: x1.95</b>\n\n'
             f'{ce_id(E[54])} <b>Cách chơi:</b> /xd4 [chan/le] [số_tiền]'
         )
-        await q.answer()
-        await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-        return
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
     if d == "menu_taixiumd5":
+        await q.answer()
         msg = (
-            f'{ce_id(E[55])} <b>TÀI XỈU MD5</b>\n\n'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_7"])} <b>TÀI XỈU MD5</b>\n\n'
             f'{ce_id(E[56])} <b>Luật chơi:</b>\n'
             f'{ce_id(E[57])} Dùng hash MD5 để random 3 xúc xắc\n'
             f'{ce_id(E[58])} Tổng 11-18: TÀI, 3-10: XỈU\n'
@@ -3371,9 +3377,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce_id(E[60])} <b>Tỉ lệ ăn: x1.95</b>\n\n'
             f'{ce_id(E[61])} <b>Cách chơi:</b> /txmd5 [tai/xiu/chan/le] [số_tiền]'
         )
-        await q.answer()
-        await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-        return
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
     if d.startswith("mt_toggle_") or d in ["mt_turnoff_all", "mt_turnon_all"]:
         return await handle_mt_toggle_callback(update, ctx)
@@ -3557,7 +3561,7 @@ application.add_handler(CommandHandler("xd4", xd4_cmd))
 application.add_handler(CommandHandler("txmd5", txmd5_cmd))
 application.add_handler(CommandHandler("group_status", group_status_cmd))
 
-# Admin commands
+# Admin commands (Đã đồng bộ cả /resetsdall và /resetall để chống lỗi không hoạt động)
 application.add_handler(CommandHandler("naptien", naptien_admin))
 application.add_handler(CommandHandler("add", add))
 application.add_handler(CommandHandler("sub", sub))
@@ -3577,6 +3581,7 @@ application.add_handler(CommandHandler("tileall", tileall_set_cmd))
 application.add_handler(CommandHandler("tile1", tile1_user_cmd))
 application.add_handler(CommandHandler("tilewin", tilewin_cmd))
 application.add_handler(CommandHandler("resetsdall", resetsdall_cmd))
+application.add_handler(CommandHandler("resetall", resetsdall_cmd)) # Fix lỗi lệnh reset hoạt động mượt mà
 application.add_handler(CommandHandler("xoalsall", xoalsall_cmd))
 application.add_handler(CommandHandler("xoals", xoals_user_cmd))
 application.add_handler(CommandHandler("setname", set_bot_name_cmd))
