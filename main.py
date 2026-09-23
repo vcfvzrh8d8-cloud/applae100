@@ -123,6 +123,10 @@ CUSTOM_EMOJI = {
     "⬆️": "5463122435425448565",
     "❓": "5463139580934892960",
     "👌": "5463423955014529788",
+    # 3 ID mới cho Bước 1, Bước 2, Bước 3 yêu cầu:
+    "step_1": "5415655814079723871",
+    "step_2": "5375338737028841420",
+    "step_3": "5382357040008021292",
 }
 
 # Danh sách 62 ID Custom Emoji mới cho từng dòng game
@@ -597,6 +601,12 @@ def gen_code():
 
 def get_deposit_info(user_id, amount=0):
     qr_url = f"https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-qr_only.png?amount={amount}&addInfo=Ndech%20{user_id}&accountName={ACCOUNT_NAME}"
+    
+    # Sử dụng custom emoji id cho Bước 1, Bước 2, Bước 3 theo yêu cầu
+    s1 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_1"]}">🔝</tg-emoji>'
+    s2 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_2"]}">🔄</tg-emoji>'
+    s3 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_3"]}">🆕</tg-emoji>'
+
     caption = (
         f'{ce("💳")} <b>THÔNG TIN NẠP TIỀN</b>\n\n'
         f'{ce("💳")} Ngân hàng: <b>MBBANK</b>\n'
@@ -2066,11 +2076,17 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
+        
+        # Áp dụng 3 ID icon mới thay thế cho 3 dòng Bước 1, Bước 2, Bước 3
+        s1 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_1"]}">🔝</tg-emoji>'
+        s2 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_2"]}">🔄</tg-emoji>'
+        s3 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_3"]}">🆕</tg-emoji>'
+
         caption = (
             f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b> {ce("😃")}\n\n'
-            f'{ce("📝")} <b>Bước 1:</b> Quét QR hoặc chuyển khoản tới STK bên dưới\n'
-            f'{ce("📝")} <b>Bước 2:</b> Ghi đúng nội dung: <code>Ndech {uid}</code>\n'
-            f'{ce("📝")} <b>Bước 3:</b> Chờ 1-3 phút, tiền tự động cộng vào ví {ce("✍️")}\n\n'
+            f'{s1} <b>Bước 1:</b> Quét QR hoặc chuyển khoản tới STK bên dưới\n'
+            f'{s2} <b>Bước 2:</b> Ghi đúng nội dung: <code>Ndech {uid}</code>\n'
+            f'{s3} <b>Bước 3:</b> Chờ 1-3 phút, tiền tự động cộng vào ví {ce("✍️")}\n\n'
             f'{ce("⚡")} <i>Chọn mệnh giá bên dưới để lấy QR có sẵn số tiền hoặc dùng lệnh /nap [số_tiền]</i> {ce("🫵")}'
         )
         qr_url, _ = get_deposit_info(uid, 0)
@@ -3335,11 +3351,16 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
+        
+        s1 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_1"]}">🔝</tg-emoji>'
+        s2 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_2"]}">🔄</tg-emoji>'
+        s3 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_3"]}">🆕</tg-emoji>'
+
         caption = (
             f'{ce("🎁")} <b>Khuyến Mãi 10% NẠP TIỀN SIÊU TỐC</b> {ce("😃")}\n\n'
-            f'{ce("📝")} <b>Bước 1:</b> Quét QR hoặc chuyển khoản tới STK\n'
-            f'{ce("📝")} <b>Bước 2:</b> Ghi đúng nội dung: <code>Ndech {uid}</code>\n'
-            f'{ce("📝")} <b>Bước 3:</b> Chờ 1-3 phút, tiền tự động cộng vào ví {ce("✍️")}\n\n'
+            f'{s1} <b>Bước 1:</b> Quét QR hoặc chuyển khoản tới STK\n'
+            f'{s2} <b>Bước 2:</b> Ghi đúng nội dung: <code>Ndech {uid}</code>\n'
+            f'{s3} <b>Bước 3:</b> Chờ 1-3 phút, tiền tự động cộng vào ví {ce("✍️")}\n\n'
             f'{ce("⚡")} <i>Chọn mệnh giá bên dưới để lấy QR có sẵn số tiền hoặc dùng lệnh /nap [số_tiền]</i> {ce("🫵")}'
         )
         qr_url, _ = get_deposit_info(uid, 0)
@@ -3618,7 +3639,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             try:
                 await ctx.bot.send_message(
                     u_id,
-                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> bị từ chối.\n'
+                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ}</code> bị từ chối.\n'
                     f'{ce("🔄")} Tiền đã được hoàn về số dư của bạn.',
                     parse_mode=ParseMode.HTML
                 )
