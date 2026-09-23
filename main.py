@@ -3077,6 +3077,128 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     d = q.data
     uid = q.from_user.id
 
+    if d == "menu_taixiu_room":
+        await q.answer()
+        msg = (
+            f'{ce_id(CUSTOM_EMOJI["game_icon_1"])} <b>TÀI XỈU ROOM</b>\n\n'
+            f'🔗 <b>Link vào phòng:</b>\n'
+            f'https://t.me/ts68clmmxh\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'━━━━━━━━━━━━━━━━━━━━━\n'
+            f'• Hệ thống lắc 3 viên xúc xắc ngẫu nhiên.\n'
+            f'• Cửa chính:\n'
+            f'  - Tài (T): Tổng điểm 3 viên từ 11 đến 18.\n'
+            f'  - Xỉu (X): Tổng điểm từ 3 đến 10.\n'
+            f'  - Chẵn (C): Tổng điểm là số chẵn.\n'
+            f'  - Lẻ (L): Tổng điểm là số lẻ.\n'
+            f'• Cửa kết hợp (trả thưởng x3.2):\n'
+            f'  - TL (Tài + Lẻ)\n'
+            f'  - TC (Tài + Chẵn)\n'
+            f'  - XL (Xỉu + Lẻ)\n'
+            f'  - XC (Xỉu + Chẵn)\n'
+            f'• Nổ hũ Jackpot:\n'
+            f'  - Ra 3 con 6 (cửa Tài trúng hũ).\n'
+            f'  - Ra 3 con 1 (cửa Xỉu trúng hũ).\n'
+            f'• Tỷ lệ trả thưởng:\n'
+            f'  - Tài / Xỉu / Chẵn / Lẻ: x1.95\n'
+            f'  - Cửa kết hợp: x3.2\n'
+            f'  - Bộ ba đồng nhất: x150\n\n'
+            f'💡 <b>Cách chơi:</b> Nhắn lệnh vào nhóm VD: <code>T 20000</code> hoặc cược ẩn danh nhắn riêng cho bot.'
+        )
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+
+    if d == "menu_xucxac_don":
+        await q.answer()
+        msg = (
+            f'{ce_id(CUSTOM_EMOJI["game_icon_2"])} <b>XÚC XẮC ĐƠN (Xúc Xắc Telegram)</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Dự đoán kết quả của 1 viên xúc xắc do Telegram quay.\n\n'
+            f'📊 <b>Các cửa cược & Tỷ lệ trả thưởng:</b>\n'
+            f'• <code>XXC</code> (Chẵn - các mặt 2, 4, 6): x1.95\n'
+            f'• <code>XXL</code> (Lẻ - các mặt 1, 3, 5): x1.95\n'
+            f'• <code>XXT</code> (Tài - các mặt 4, 5, 6): x1.95\n'
+            f'• <code>XXX</code> (Xỉu - các mặt 1, 2, 3): x1.95\n'
+            f'• <code>D1</code> đến <code>D6</code> (Đoán chính xác mặt xúc xắc ra từ 1 đến 6): x5\n\n'
+            f'💡 <b>Cách chơi:</b> <code>[Mã_cửa] [số_tiền]</code> VD: <code>XXC 50000</code> hoặc <code>D3 20000</code>'
+        )
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
+
+    if d == "menu_longho":
+        await q.answer()
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🐯 CHỌN LONG", callback_data="lh_choice_long")],
+            [InlineKeyboardButton("🐉 CHỌN HỔ", callback_data="lh_choice_ho")]
+        ])
+        return await q.message.edit_text(
+            f'{ce_id(CUSTOM_EMOJI["game_icon_3"])} <b>LONG HỔ</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• So sánh điểm số của 2 lá bài chia cho cửa LONG và HỔ.\n'
+            f'• Bên nào có điểm lớn hơn (A nhỏ nhất, K lớn nhất) thì bên đó thắng.\n'
+            f'• Nếu điểm bằng nhau → Hòa (hoàn lại tiền cược).\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
+            f'👇 <b>Chọn cửa để đặt cược:</b>',
+            reply_markup=kb, parse_mode=ParseMode.HTML)
+
+    if d == "menu_minipoker":
+        await q.answer()
+        msg = (
+            f'{ce_id(CUSTOM_EMOJI["game_icon_4"])} <b>MINI POKER</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Bot bốc ngẫu nhiên 5 lá bài để phân định thắng thua dựa trên các tay bài Poker.\n\n'
+            f'📊 <b>Các tổ hợp & Tỷ lệ trả thưởng:</b>\n'
+            f'• Tứ Quý (4 lá cùng số): x100\n'
+            f'• Bộ Ba (3 lá cùng số): x25\n'
+            f'• Hai Đôi: x10\n'
+            f'• Một Đôi: x2\n'
+            f'• Bài rác (Không có đôi nào): Thua.\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/mp [số_tiền]</code> VD: <code>/mp 10000</code>'
+        )
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
+
+    if d == "menu_baccarat":
+        await q.answer()
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("👤 PLAYER (x2)", callback_data="bcr_choice_player")],
+            [InlineKeyboardButton("🏦 BANKER (x2)", callback_data="bcr_choice_banker")],
+            [InlineKeyboardButton("⚖️ TIE (x9)", callback_data="bcr_choice_tie")]
+        ])
+        return await q.message.edit_text(
+            f'{ce_id(CUSTOM_EMOJI["game_icon_5"])} <b>BACCARAT</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• So sánh điểm giữa cửa PLAYER và BANKER (tính điểm từ 0 đến 9, gần 9 nhất là thắng, có luật rút thêm lá thứ 3 nếu điểm dưới 6).\n'
+            f'• Cửa TIE là cửa Hòa.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b>\n'
+            f'• Player: x2\n'
+            f'• Banker: x2\n'
+            f'• Tie (Hòa): x9\n\n'
+            f'👇 <b>Chọn cửa để đặt cược:</b>',
+            reply_markup=kb, parse_mode=ParseMode.HTML)
+
+    if d == "menu_xocdia4":
+        await q.answer()
+        msg = (
+            f'{ce_id(CUSTOM_EMOJI["game_icon_6"])} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Xóc ngẫu nhiên 4 đồng xu (mỗi đồng xu có mặt Đỏ hoặc Trắng).\n'
+            f'• Chẵn: Tổng số mặt đỏ là 0, 2 hoặc 4 đỏ (hoặc toàn trắng/toàn đỏ).\n'
+            f'• Lẻ: Tổng số mặt đỏ là 1 hoặc 3 đỏ.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/xd4 [chan/le] [số_tiền]</code> VD: <code>/xd4 chan 50000</code>'
+        )
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
+
+    if d == "menu_taixiumd5":
+        await q.answer()
+        msg = (
+            f'{ce_id(CUSTOM_EMOJI["game_icon_7"])} <b>TÀI XỈU MD5</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Sử dụng mã hóa MD5 từ chuỗi ngẫu nhiên của hệ thống để tạo ra kết quả 3 viên xúc xắc một cách minh bạch, chống gian lận.\n'
+            f'• Tổng điểm 11-18 là Tài, 3-10 là Xỉu. Tổng chẵn là Chẵn, lẻ là Lẻ.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/txmd5 [tai/xiu/chan/le] [số_tiền]</code> VD: <code>/txmd5 tai 50000</code>'
+        )
+        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
+
     if d.startswith("lh_choice_") or d.startswith("bcr_choice_"):
         return await handle_game_choice_callback(update, ctx)
 
@@ -3261,128 +3383,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             media=InputMediaPhoto(media=qr_url, caption=caption, parse_mode=ParseMode.HTML),
             reply_markup=kb
         )
-
-    if d == "menu_taixiu_room":
-        await q.answer()
-        msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_1"])} <b>TÀI XỈU ROOM</b>\n\n'
-            f'🔗 <b>Link vào phòng:</b>\n'
-            f'https://t.me/ts68clmmxh\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'━━━━━━━━━━━━━━━━━━━━━\n'
-            f'• Hệ thống lắc 3 viên xúc xắc ngẫu nhiên.\n'
-            f'• Cửa chính:\n'
-            f'  - Tài (T): Tổng điểm 3 viên từ 11 đến 18.\n'
-            f'  - Xỉu (X): Tổng điểm từ 3 đến 10.\n'
-            f'  - Chẵn (C): Tổng điểm là số chẵn.\n'
-            f'  - Lẻ (L): Tổng điểm là số lẻ.\n'
-            f'• Cửa kết hợp (trả thưởng x3.2):\n'
-            f'  - TL (Tài + Lẻ)\n'
-            f'  - TC (Tài + Chẵn)\n'
-            f'  - XL (Xỉu + Lẻ)\n'
-            f'  - XC (Xỉu + Chẵn)\n'
-            f'• Nổ hũ Jackpot:\n'
-            f'  - Ra 3 con 6 (cửa Tài trúng hũ).\n'
-            f'  - Ra 3 con 1 (cửa Xỉu trúng hũ).\n'
-            f'• Tỷ lệ trả thưởng:\n'
-            f'  - Tài / Xỉu / Chẵn / Lẻ: x1.95\n'
-            f'  - Cửa kết hợp: x3.2\n'
-            f'  - Bộ ba đồng nhất: x150\n\n'
-            f'💡 <b>Cách chơi:</b> Nhắn lệnh vào nhóm VD: <code>T 20000</code> hoặc cược ẩn danh nhắn riêng cho bot.'
-        )
-        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-
-    if d == "menu_xucxac_don":
-        await q.answer()
-        msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_2"])} <b>XÚC XẮC ĐƠN (Xúc Xắc Telegram)</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• Dự đoán kết quả của 1 viên xúc xắc do Telegram quay.\n\n'
-            f'📊 <b>Các cửa cược & Tỷ lệ trả thưởng:</b>\n'
-            f'• <code>XXC</code> (Chẵn - các mặt 2, 4, 6): x1.95\n'
-            f'• <code>XXL</code> (Lẻ - các mặt 1, 3, 5): x1.95\n'
-            f'• <code>XXT</code> (Tài - các mặt 4, 5, 6): x1.95\n'
-            f'• <code>XXX</code> (Xỉu - các mặt 1, 2, 3): x1.95\n'
-            f'• <code>D1</code> đến <code>D6</code> (Đoán chính xác mặt xúc xắc ra từ 1 đến 6): x5\n\n'
-            f'💡 <b>Cách chơi:</b> <code>[Mã_cửa] [số_tiền]</code> VD: <code>XXC 50000</code> hoặc <code>D3 20000</code>'
-        )
-        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-
-    if d == "menu_longho":
-        await q.answer()
-        kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🐯 CHỌN LONG", callback_data="lh_choice_long")],
-            [InlineKeyboardButton("🐉 CHỌN HỔ", callback_data="lh_choice_ho")]
-        ])
-        return await q.message.edit_text(
-            f'{ce_id(CUSTOM_EMOJI["game_icon_3"])} <b>LONG HỔ</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• So sánh điểm số của 2 lá bài chia cho cửa LONG và HỔ.\n'
-            f'• Bên nào có điểm lớn hơn (A nhỏ nhất, K lớn nhất) thì bên đó thắng.\n'
-            f'• Nếu điểm bằng nhau → Hòa (hoàn lại tiền cược).\n\n'
-            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
-            f'👇 <b>Chọn cửa để đặt cược:</b>',
-            reply_markup=kb, parse_mode=ParseMode.HTML)
-
-    if d == "menu_minipoker":
-        await q.answer()
-        msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_4"])} <b>MINI POKER</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• Bot bốc ngẫu nhiên 5 lá bài để phân định thắng thua dựa trên các tay bài Poker.\n\n'
-            f'📊 <b>Các tổ hợp & Tỷ lệ trả thưởng:</b>\n'
-            f'• Tứ Quý (4 lá cùng số): x100\n'
-            f'• Bộ Ba (3 lá cùng số): x25\n'
-            f'• Hai Đôi: x10\n'
-            f'• Một Đôi: x2\n'
-            f'• Bài rác (Không có đôi nào): Thua.\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/mp [số_tiền]</code> VD: <code>/mp 10000</code>'
-        )
-        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-
-    if d == "menu_baccarat":
-        await q.answer()
-        kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("👤 PLAYER (x2)", callback_data="bcr_choice_player")],
-            [InlineKeyboardButton("🏦 BANKER (x2)", callback_data="bcr_choice_banker")],
-            [InlineKeyboardButton("⚖️ TIE (x9)", callback_data="bcr_choice_tie")]
-        ])
-        return await q.message.edit_text(
-            f'{ce_id(CUSTOM_EMOJI["game_icon_5"])} <b>BACCARAT</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• So sánh điểm giữa cửa PLAYER và BANKER (tính điểm từ 0 đến 9, gần 9 nhất là thắng, có luật rút thêm lá thứ 3 nếu điểm dưới 6).\n'
-            f'• Cửa TIE là cửa Hòa.\n\n'
-            f'💲 <b>Tỷ lệ trả thưởng:</b>\n'
-            f'• Player: x2\n'
-            f'• Banker: x2\n'
-            f'• Tie (Hòa): x9\n\n'
-            f'👇 <b>Chọn cửa để đặt cược:</b>',
-            reply_markup=kb, parse_mode=ParseMode.HTML)
-
-    if d == "menu_xocdia4":
-        await q.answer()
-        msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_6"])} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• Xóc ngẫu nhiên 4 đồng xu (mỗi đồng xu có mặt Đỏ hoặc Trắng).\n'
-            f'• Chẵn: Tổng số mặt đỏ là 0, 2 hoặc 4 đỏ (hoặc toàn trắng/toàn đỏ).\n'
-            f'• Lẻ: Tổng số mặt đỏ là 1 hoặc 3 đỏ.\n\n'
-            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/xd4 [chan/le] [số_tiền]</code> VD: <code>/xd4 chan 50000</code>'
-        )
-        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
-
-    if d == "menu_taixiumd5":
-        await q.answer()
-        msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_7"])} <b>TÀI XỈU MD5</b>\n\n'
-            f'🎯 <b>LUẬT CHƠI:</b>\n'
-            f'• Sử dụng mã hóa MD5 từ chuỗi ngẫu nhiên của hệ thống để tạo ra kết quả 3 viên xúc xắc một cách minh bạch, chống gian lận.\n'
-            f'• Tổng điểm 11-18 là Tài, 3-10 là Xỉu. Tổng chẵn là Chẵn, lẻ là Lẻ.\n\n'
-            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/txmd5 [tai/xiu/chan/le] [số_tiền]</code> VD: <code>/txmd5 tai 50000</code>'
-        )
-        return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
     if d.startswith("mt_toggle_") or d in ["mt_turnoff_all", "mt_turnon_all"]:
         return await handle_mt_toggle_callback(update, ctx)
