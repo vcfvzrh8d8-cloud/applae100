@@ -61,7 +61,7 @@ CUSTOM_EMOJI = {
     "🔗": "5271604874419647061",
     "📎": "5305265301917549162",
     "🗑": "5372825386591732174",
-    "🗓": "5287606810168028257",
+    "🗓": "5413879192267805083",
     "⌛": "5472026645659401564",
     "🔜": "5440621591387980068",
     "🚀": "5372917041193828849",
@@ -114,6 +114,17 @@ CUSTOM_EMOJI = {
     "⬅️": "5363896514655564837",
     "➡️": "5416117059207572332",
     "📣": "5298609030321691620",
+    
+    # NEW ICONS CẬP NHẬT
+    "🛍": "5406683434124859552",
+    "🆓": "5406756500108501710",
+    "✉️": "5253742260054409879",
+    "😵": "5465137208878969279",
+    "⚰️": "5463186335948878489",
+    "🔝": "5463071033256848094",
+    "⬆️": "5463122435425448565",
+    "❓": "5463139580934892960",
+    "👌": "5463423955014529788",
 }
 
 def ce(emoji: str) -> str:
@@ -1290,7 +1301,7 @@ async def play_longho(update, ctx, choice, amount):
         if long_card == ho_card:
             add_money(uid, amount, "Hoàn tiền Long Hổ (Hòa)")
             await msg_status.edit_text(
-                f'{ce("🐯")} <b>LONG HỔ</b>\n\n'
+                f'{ce("⚰️")} <b>LONG HỔ</b>\n\n'
                 f'🐯 LONG: <b>{card_names.get(long_card, long_card)}</b>\n'
                 f'🐉 HỔ: <b>{card_names.get(ho_card, ho_card)}</b>\n\n'
                 f'⚖️ <b>HÒA!</b> Hoàn tiền: <code>{fmt_money(amount)}đ</code>\n'
@@ -1309,7 +1320,7 @@ async def play_longho(update, ctx, choice, amount):
             status = f'{ce("❌")} <b>THUA!</b>'
         
         await msg_status.edit_text(
-            f'{ce("🐯")} <b>LONG HỔ</b>\n\n'
+            f'{ce("⚰️")} <b>LONG HỔ</b>\n\n'
             f'🐯 LONG: <b>{card_names.get(long_card, long_card)}</b>\n'
             f'🐉 HỔ: <b>{card_names.get(ho_card, ho_card)}</b>\n\n'
             f'Kết quả: <b>{"LONG" if result == "long" else "HỔ"}</b>\n'
@@ -1399,7 +1410,7 @@ async def play_minipoker(update, ctx, amount):
         status = f'{ce("❌")} <b>THUA!</b> Bài rác'
     
     await msg_status.edit_text(
-        f'{ce("🃏")} <b>MINI POKER</b>\n\n'
+        f'{ce("🔝")} <b>MINI POKER</b>\n\n'
         f'{ce("🎴")} Bài của bạn: {cards_str}\n'
         f'🏆 Bộ: <b>{hand_name}</b>\n\n'
         f'{status}\n'
@@ -1472,7 +1483,7 @@ async def play_baccarat(update, ctx, choice, amount):
         status = f'{ce("❌")} <b>THUA!</b>'
     
     await msg_status.edit_text(
-        f'{ce("🎰")} <b>BACCARAT</b>\n\n'
+        f'{ce("⬆️")} <b>BACCARAT</b>\n\n'
         f'{ce("👤")} PLAYER: <b>{player_score}</b>\n'
         f'{ce("🏦")} BANKER: <b>{banker_score}</b>\n\n'
         f'Kết quả: <b>{result_name}</b>\n'
@@ -1526,7 +1537,7 @@ async def play_xocdia4(update, ctx, choice, amount):
         status = f'{ce("❌")} <b>THUA!</b>'
     
     await msg_status.edit_text(
-        f'💿 <b>XÓC ĐĨA 4 VỊ</b>\n\n'
+        f'{ce("❓")} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
         f'{icons}\n'
         f'{ce("✍️")} {"CHẴN" if is_chan else "LẺ"} ({red_count} Đỏ)\n\n'
         f'{status}\n'
@@ -1589,7 +1600,7 @@ async def play_taixiumd5(update, ctx, choice, amount):
         status = f'{ce("❌")} <b>THUA!</b>'
     
     await msg_status.edit_text(
-        f'{ce("🎲")} <b>TÀI XỈU MD5</b>\n\n'
+        f'{ce("👌")} <b>TÀI XỈU MD5</b>\n\n'
         f'🎲 Xúc xắc: <b>{d1} - {d2} - {d3}</b>\n'
         f'{ce("📊")} Tổng: <b>{total}</b> → {"TÀI" if is_tai else "XỈU"} {"CHẴN" if is_chan else "LẺ"}\n'
         f'🔐 MD5: <code>{md5_hash[:16]}...</code>\n\n'
@@ -1644,9 +1655,9 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except:
             pass
     menu = ReplyKeyboardMarkup([
-        ["🎲 DANH SÁCH GAME", "👥 TÀI KHOẢN"],
-        ["💰 NẠP TIỀN", "💳 RÚT TIỀN"],
-        ["💬 LỊCH SỬ", "🔥 HỖ TRỢ"]
+        ["🛍 DANH SÁCH GAME", "🆓 TÀI KHOẢN"],
+        ["💸 NẠP TIỀN", "💵 RÚT TIỀN"],
+        ["🗓 LỊCH SỬ", "✉️ HỖ TRỢ"]
     ], resize_keyboard=True)
     welcome_text = (
         f'{ce("🎉")} <b>CHÀO MỪNG {update.effective_user.first_name.upper()} ĐÃ THAM GIA!</b>\n\n'
@@ -1995,7 +2006,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     user_reply = update.message
 
-    if txt == "👥 TÀI KHOẢN":
+    if txt == "🆓 TÀI KHOẢN":
         res = query("SELECT balance, bank, stk, name, refs, total_bet FROM users WHERE user_id=%s", (uid,))
         if not res:
             get_user(uid)
@@ -2008,7 +2019,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("📤 Lịch sử Rút", callback_data="his_withdraw")
         ]])
         msg = (
-            f'{ce("👥")} <b>THÔNG TIN TÀI KHOẢN</b>\n'
+            f'{ce("🆓")} <b>THÔNG TIN TÀI KHOẢN</b>\n'
             f'━━━━━━━━━━━━━━━━━━━━━\n'
             f'{ce("🆔")} ID: <code>{uid}</code>\n'
             f'{ce("👑")} <b>Cấp VIP:</b> <code>{vip_name}</code>\n'
@@ -2022,7 +2033,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return await user_reply.reply_text(msg, reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "💰 NẠP TIỀN":
+    if txt == "💸 NẠP TIỀN":
         if is_feature_banned(uid, 'nap'):
             return await user_reply.reply_text(f'{ce("🚫")} Tính năng NẠP TIỀN đã bị khóa!', parse_mode=ParseMode.HTML)
         if check_mt('mt_nap') and uid not in ADMIN_IDS:
@@ -2044,23 +2055,23 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         qr_url, _ = get_deposit_info(uid, 0)
         return await user_reply.reply_photo(photo=qr_url, caption=caption, reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "🎲 DANH SÁCH GAME":
+    if txt == "🛍 DANH SÁCH GAME":
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎲 TÀI XỈU ROOM", callback_data="menu_taixiu_room")],
-            [InlineKeyboardButton("🎲 XÚC XẮC ĐƠN", callback_data="menu_xucxac_don")],
-            [InlineKeyboardButton("🐯 LONG HỔ", callback_data="menu_longho")],
-            [InlineKeyboardButton("🃏 MINI POKER", callback_data="menu_minipoker")],
-            [InlineKeyboardButton("🎰 BACCARAT", callback_data="menu_baccarat")],
-            [InlineKeyboardButton("💿 XÓC ĐĨA 4 VỊ", callback_data="menu_xocdia4")],
-            [InlineKeyboardButton("🎲 TÀI XỈU MD5", callback_data="menu_taixiumd5")],
+            [InlineKeyboardButton("😵 TÀI XỈU ROOM", callback_data="menu_taixiu_room")],
+            [InlineKeyboardButton("🚫 XÚC XẮC ĐƠN", callback_data="menu_xucxac_don")],
+            [InlineKeyboardButton("⚰️ LONG HỔ", callback_data="menu_longho")],
+            [InlineKeyboardButton("🔝 MINI POKER", callback_data="menu_minipoker")],
+            [InlineKeyboardButton("⬆️ BACCARAT", callback_data="menu_baccarat")],
+            [InlineKeyboardButton("❓ XÓC ĐĨA 4 VỊ", callback_data="menu_xocdia4")],
+            [InlineKeyboardButton("👌 TÀI XỈU MD5", callback_data="menu_taixiumd5")],
         ])
         return await user_reply.reply_text(
-            f'{ce("🎲")} <b>DANH SÁCH TRÒ CHƠI</b>\n'
+            f'{ce("🛍")} <b>DANH SÁCH TRÒ CHƠI</b>\n'
             f'{ce("😃")} Chúc bạn chơi vui vẻ! {ce("✍️")}\n\n'
             f'{ce("🫵")} Vui lòng chọn game bên dưới: {ce("😮‍💨")}',
             reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "💳 RÚT TIỀN":
+    if txt == "💵 RÚT TIỀN":
         if is_feature_banned(uid, 'rut'):
             return await user_reply.reply_text(f'{ce("🚫")} Tính năng RÚT TIỀN đã bị khóa!', parse_mode=ParseMode.HTML)
         if check_mt('mt_rut') and uid not in ADMIN_IDS:
@@ -2075,7 +2086,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         else:
             u = res[0]
             await user_reply.reply_text(
-                f'{ce("💳")} <b>TÀI KHOẢN RÚT:</b>\n'
+                f'{ce("💵")} <b>TÀI KHOẢN RÚT:</b>\n'
                 f'{ce("💳")} Bank: {u[0]}\n'
                 f'{ce("💰")} STK: <code>{u[1]}</code>\n'
                 f'{ce("👥")} Tên: {u[2]}\n\n'
@@ -2084,12 +2095,12 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML)
         return
 
-    if txt == "💬 LỊCH SỬ":
+    if txt == "🗓 LỊCH SỬ":
         return await history_pro(update, ctx)
 
-    if txt == "🔥 HỖ TRỢ":
+    if txt == "✉️ HỖ TRỢ":
         msg = (
-            f'{ce("💬")} <b>HỖ TRỢ KHÁCH HÀNG</b>\n\n'
+            f'{ce("✉️")} <b>HỖ TRỢ KHÁCH HÀNG</b>\n\n'
             f'{ce("👥")} <b>Hỗ Trợ:</b> @echcutodz\n'
             f'{ce("💬")} Phản hồi trong giờ hành chính!\n'
             f'━━━━━━━━━━━━━━━━━━━━━\n'
@@ -2098,7 +2109,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'• Rút tiền chưa được duyệt\n'
             f'• Khiếu nại kết quả game'
         )
-        kb = InlineKeyboardMarkup([[InlineKeyboardButton("💬 NHẮN HỖ TRỢ", url="https://tply.me/echcutodz")]])
+        kb = InlineKeyboardMarkup([[InlineKeyboardButton("✉️ NHẮN HỖ TRỢ", url="https://tply.me/echcutodz")]])
         return await user_reply.reply_text(msg, reply_markup=kb, parse_mode=ParseMode.HTML)
 
     if len(txt.split()) == 2:
@@ -2947,13 +2958,13 @@ async def baotri_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     def st(k):
         return "🔴 OFF" if check_mt(k) else "🟢 ON"
     kb = [
-        [InlineKeyboardButton(f"🎲 Tài Xỉu Room: {st('mt_taixiu_room')}", callback_data="tg_mt_taixiu_room")],
-        [InlineKeyboardButton(f"🎲 Xúc Xắc Đơn: {st('mt_xucxac_don')}", callback_data="tg_mt_xucxac_don")],
-        [InlineKeyboardButton(f"🐯 Long Hổ: {st('mt_longho')}", callback_data="tg_mt_longho")],
-        [InlineKeyboardButton(f"🃏 Mini Poker: {st('mt_minipoker')}", callback_data="tg_mt_minipoker")],
-        [InlineKeyboardButton(f"🎰 Baccarat: {st('mt_baccarat')}", callback_data="tg_mt_baccarat")],
-        [InlineKeyboardButton(f"💿 Xóc Đĩa 4 Vị: {st('mt_xocdia4')}", callback_data="tg_mt_xocdia4")],
-        [InlineKeyboardButton(f"🎲 Tài Xỉu MD5: {st('mt_taixiumd5')}", callback_data="tg_mt_taixiumd5")],
+        [InlineKeyboardButton(f"😵 Tài Xỉu Room: {st('mt_taixiu_room')}", callback_data="tg_mt_taixiu_room")],
+        [InlineKeyboardButton(f"🚫 Xúc Xắc Đơn: {st('mt_xucxac_don')}", callback_data="tg_mt_xucxac_don")],
+        [InlineKeyboardButton(f"⚰️ Long Hổ: {st('mt_longho')}", callback_data="tg_mt_longho")],
+        [InlineKeyboardButton(f"🔝 Mini Poker: {st('mt_minipoker')}", callback_data="tg_mt_minipoker")],
+        [InlineKeyboardButton(f"⬆️ Baccarat: {st('mt_baccarat')}", callback_data="tg_mt_baccarat")],
+        [InlineKeyboardButton(f"❓ Xóc Đĩa 4 Vị: {st('mt_xocdia4')}", callback_data="tg_mt_xocdia4")],
+        [InlineKeyboardButton(f"👌 Tài Xỉu MD5: {st('mt_taixiumd5')}", callback_data="tg_mt_taixiumd5")],
         [InlineKeyboardButton(f"💳 Nạp Tiền: {st('mt_nap')}", callback_data="tg_mt_nap"),
          InlineKeyboardButton(f"💸 Rút Tiền: {st('mt_rut')}", callback_data="tg_mt_rut")],
         [InlineKeyboardButton("❌ ĐÓNG BẢNG", callback_data="close_admin")]
@@ -2965,13 +2976,13 @@ async def baotri_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 @admin_only
 async def baotri_he_thong_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     maintenance_items = {
-        'mt_taixiu_room': {'name': 'TÀI XỈU ROOM', 'type': 'game', 'icon': '🎲'},
-        'mt_xucxac_don': {'name': 'XÚC XẮC ĐƠN', 'type': 'game', 'icon': '🎲'},
-        'mt_longho': {'name': 'LONG HỔ', 'type': 'game', 'icon': '🐯'},
-        'mt_minipoker': {'name': 'MINI POKER', 'type': 'game', 'icon': '🃏'},
-        'mt_baccarat': {'name': 'BACCARAT', 'type': 'game', 'icon': '🎰'},
-        'mt_xocdia4': {'name': 'XÓC ĐĨA 4 VỊ', 'type': 'game', 'icon': '💿'},
-        'mt_taixiumd5': {'name': 'TÀI XỈU MD5', 'type': 'game', 'icon': '🎲'},
+        'mt_taixiu_room': {'name': 'TÀI XỈU ROOM', 'type': 'game', 'icon': '😵'},
+        'mt_xucxac_don': {'name': 'XÚC XẮC ĐƠN', 'type': 'game', 'icon': '🚫'},
+        'mt_longho': {'name': 'LONG HỔ', 'type': 'game', 'icon': '⚰️'},
+        'mt_minipoker': {'name': 'MINI POKER', 'type': 'game', 'icon': '🔝'},
+        'mt_baccarat': {'name': 'BACCARAT', 'type': 'game', 'icon': '⬆️'},
+        'mt_xocdia4': {'name': 'XÓC ĐĨA 4 VỊ', 'type': 'game', 'icon': '❓'},
+        'mt_taixiumd5': {'name': 'TÀI XỈU MD5', 'type': 'game', 'icon': '👌'},
         'mt_nap': {'name': 'NẠP TIỀN', 'type': 'feature', 'icon': '💳'},
         'mt_rut': {'name': 'RÚT TIỀN', 'type': 'feature', 'icon': '💸'},
     }
@@ -3107,7 +3118,7 @@ async def handle_game_choice_callback(update: Update, ctx: ContextTypes.DEFAULT_
         choice_name = "LONG" if choice == "long" else "HỔ"
         await q.answer(f"Bạn chọn {choice_name}", show_alert=False)
         await q.message.edit_text(
-            f'{ce("🐯")} <b>LONG HỔ</b>\n\n'
+            f'{ce("⚰️")} <b>LONG HỔ</b>\n\n'
             f'Bạn chọn: <b>{choice_name}</b>\n\n'
             f'Vui lòng nhập số tiền cược:\n'
             f'<code>/lh {choice} [số_tiền]</code>\n'
@@ -3120,7 +3131,7 @@ async def handle_game_choice_callback(update: Update, ctx: ContextTypes.DEFAULT_
         choice_name = choice.upper()
         await q.answer(f"Bạn chọn {choice_name}", show_alert=False)
         await q.message.edit_text(
-            f'{ce("🎰")} <b>BACCARAT</b>\n\n'
+            f'{ce("⬆️")} <b>BACCARAT</b>\n\n'
             f'Bạn chọn: <b>{choice_name}</b>\n\n'
             f'Vui lòng nhập số tiền cược:\n'
             f'<code>/bcr {choice} [số_tiền]</code>\n'
@@ -3280,7 +3291,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return await q.message.edit_text(
                 f'{ce("🔔")} <b>HỖ TRỢ NẠP TIỀN</b>\n\n'
                 f'Vui lòng liên hệ Admin: @echcutodz\n'
-                f'Hoặc quay lại menu <b>💰 NẠP TIỀN</b> để tạo QR.',
+                f'Hoặc quay lại menu <b>💸 NẠP TIỀN</b> để tạo QR.',
                 parse_mode=ParseMode.HTML)
         try:
             amount = int(d.split("_")[1])
@@ -3319,9 +3330,9 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "menu_taixiu_room":
         msg = (
-            f'🎲 <b>TÀI XỈU ROOM</b> 🎲\n\n'
+            f'😵 <b>TÀI XỈU ROOM</b> 😵\n\n'
             f'🔗 <b>Link vào phòng:</b>\n'
-            f'https://t.me/fb88clmmcx\n\n'
+            f'https://t.me/ts68clmmxh\n\n'
             f'📜 <b>HƯỚNG DẪN:</b>\n'
             f'━━━━━━━━━━━━━━━━━━━━━\n'
             f'1️⃣ Bấm link trên vào nhóm\n'
@@ -3342,7 +3353,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "menu_xucxac_don":
         msg = (
-            f'🎲 <b>XÚC XẮC TELEGRAM</b> 🎲\n\n'
+            f'🚫 <b>XÚC XẮC TELEGRAM</b> 🚫\n\n'
             f'🔖 <b>Thể lệ:</b>\n'
             f'<code>XXC</code>  ➤   x1.95  ➤ Xúc Xắc: 2,4,6\n'
             f'<code>XXL</code>  ➤   x1.95  ➤ Xúc Xắc: 1,3,5\n'
@@ -3365,7 +3376,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🐉 CHỌN HỔ", callback_data="lh_choice_ho")]
         ])
         await q.message.edit_text(
-            f'🐯 <b>LONG HỔ</b> 🐉\n\n'
+            f'⚰️ <b>LONG HỔ</b> ⚰️\n\n'
             f'📜 <b>Luật chơi:</b>\n'
             f'• So sánh điểm 2 lá bài LONG và HỔ\n'
             f'• Bên nào điểm cao hơn thắng\n'
@@ -3377,7 +3388,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "menu_minipoker":
         msg = (
-            f'🃏 <b>MINI POKER</b>\n\n'
+            f'🔝 <b>MINI POKER</b>\n\n'
             f'📜 <b>Luật chơi:</b>\n'
             f'• <b>Tứ Quý</b> (4 lá cùng rank): x100\n'
             f'• <b>Bộ Ba</b> (3 lá cùng rank): x25\n'
@@ -3395,7 +3406,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("⚖️ TIE (x9)", callback_data="bcr_choice_tie")]
         ])
         await q.message.edit_text(
-            f'🎰 <b>BACCARAT</b>\n\n'
+            f'⬆️ <b>BACCARAT</b>\n\n'
             f'📜 <b>Luật chơi:</b>\n'
             f'• So sánh điểm PLAYER và BANKER\n'
             f'• Điểm gần 9 nhất thắng\n'
@@ -3407,7 +3418,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "menu_xocdia4":
         msg = (
-            f'💿 <b>XÓC ĐĨA 4 VỊ</b>\n\n'
+            f'❓ <b>XÓC ĐĨA 4 VỊ</b>\n\n'
             f'📜 <b>Luật chơi:</b>\n'
             f'• 4 đồng xu được xóc ngẫu nhiên\n'
             f'• Chẵn: 0, 2, 4 đỏ\n'
@@ -3420,7 +3431,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "menu_taixiumd5":
         msg = (
-            f'🎲 <b>TÀI XỈU MD5</b>\n\n'
+            f'👌 <b>TÀI XỈU MD5</b>\n\n'
             f'📜 <b>Luật chơi:</b>\n'
             f'• Dùng hash MD5 để random 3 xúc xắc\n'
             f'• Tổng 11-18: TÀI, 3-10: XỈU\n'
@@ -3683,3 +3694,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Lỗi: {e}")
         traceback.print_exc()
+
