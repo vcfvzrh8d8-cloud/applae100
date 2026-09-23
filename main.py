@@ -123,13 +123,11 @@ CUSTOM_EMOJI = {
     "⬆️": "5463122435425448565",
     "❓": "5463139580934892960",
     "👌": "5463423955014529788",
-    # 3 ID mới cho Bước 1, Bước 2, Bước 3 yêu cầu:
     "step_1": "5415655814079723871",
     "step_2": "5375338737028841420",
     "step_3": "5382357040008021292",
 }
 
-# Danh sách 62 ID Custom Emoji mới cho từng dòng game
 E = [
     "5210956306952758910", "5456140674028019486", "5224607267797606837", "5229064374403998351",
     "5440660757194744323", "5449683594425410231", "5231200819986047254", "5447183459602669338",
@@ -166,9 +164,6 @@ def ce_text(text: str) -> str:
 def fmt_money(amount: int) -> str:
     return f"{amount:,}".replace(",", ".")
 
-# ============================================================
-# TIMEZONE VIỆT NAM
-# ============================================================
 VIETNAM_TZ = pytz.timezone('Asia/Ho_Chi_Minh')
 
 def get_vietnam_time():
@@ -180,9 +175,6 @@ def get_vietnam_date():
 def get_vietnam_datetime_db():
     return get_vietnam_time().strftime("%H:%M - %d/%m/%Y")
 
-# ============================================================
-# CẤU HÌNH
-# ============================================================
 TOKEN = os.getenv("BOT_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -204,9 +196,6 @@ game_history = {}
 SESSION_COUNTER = {"value": 0}
 pending_inputs = {}
 
-# ============================================================
-# DATABASE
-# ============================================================
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     return conn
@@ -228,9 +217,6 @@ def query(q, args=()):
         conn.close()
     return res
 
-# ============================================================
-# KHỞI TẠO BẢNG
-# ============================================================
 query("CREATE TABLE IF NOT EXISTS codes (code TEXT PRIMARY KEY, reward INTEGER, uses INTEGER)")
 query("""
 CREATE TABLE IF NOT EXISTS users (
@@ -342,9 +328,6 @@ CREATE TABLE IF NOT EXISTS codenap (
 )
 """)
 
-# ============================================================
-# DANH SÁCH GAME
-# ============================================================
 games_to_keep = [
     (1, "TÀI XỈU ROOM"),
     (2, "XÚC XẮC ĐƠN"),
@@ -402,9 +385,6 @@ res_jackpot = query("SELECT 1 FROM settings WHERE key='jackpot_amount'")
 if not res_jackpot:
     query("INSERT INTO settings VALUES('jackpot_amount', '100000')")
 
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
 def is_system_maintenance():
     res = query("SELECT value FROM settings WHERE key='system_maintenance'")
     return res[0][0] == '1' if res else False
@@ -602,11 +582,6 @@ def gen_code():
 def get_deposit_info(user_id, amount=0):
     qr_url = f"https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-qr_only.png?amount={amount}&addInfo=Ndech%20{user_id}&accountName={ACCOUNT_NAME}"
     
-    # Sử dụng custom emoji id cho Bước 1, Bước 2, Bước 3 theo yêu cầu
-    s1 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_1"]}">🔝</tg-emoji>'
-    s2 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_2"]}">🔄</tg-emoji>'
-    s3 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_3"]}">🆕</tg-emoji>'
-
     caption = (
         f'{ce("💳")} <b>THÔNG TIN NẠP TIỀN</b>\n\n'
         f'{ce("💳")} Ngân hàng: <b>MBBANK</b>\n'
@@ -651,9 +626,6 @@ async def track_interaction(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML)
             query("UPDATE daily_top_interactions SET rewarded=1 WHERE user_id=%s AND group_id=%s", (uid, gid))
 
-# ============================================================
-# JACKPOT
-# ============================================================
 def get_jackpot():
     res = query("SELECT value FROM settings WHERE key='jackpot_amount'")
     if res:
@@ -664,9 +636,6 @@ def get_jackpot():
 def update_jackpot(amount):
     query("UPDATE settings SET value=%s WHERE key='jackpot_amount'", (str(amount),))
 
-# ============================================================
-# TÀI XỈU ROOM - RESULT HELPERS
-# ============================================================
 def get_result_code(res_tx, res_cl):
     tx_code = "T" if res_tx == "tai" else "X"
     cl_code = "C" if res_cl == "chan" else "L"
@@ -682,9 +651,6 @@ def get_full_result_text(res_tx, res_cl):
     cl_text = "CHẴN" if res_cl == "chan" else "LẺ"
     return f"{tx_text} {cl_text}"
 
-# ============================================================
-# TÀI XỈU ROOM - GAME CYCLE
-# ============================================================
 async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
     while True:
         try:
@@ -985,9 +951,6 @@ async def run_dice_game_cycle(bot, group_id: int, chat_id: int):
             traceback.print_exc()
             await asyncio.sleep(5)
 
-# ============================================================
-# KIỂM TRA XUNG ĐỘT CỬA CƯỢC
-# ============================================================
 def choices_conflict(c1, c2):
     def get_props(c):
         if c == "tai": return {"tai"}
@@ -1009,9 +972,6 @@ def choices_conflict(c1, c2):
     if "le" in p1 and "chan" in p2: return True
     return False
 
-# ============================================================
-# ĐẶT CƯỢC NHÓM & ẨN DANH
-# ============================================================
 async def place_bet_in_group(bot, user_id, group_id, choice, amount, username=""):
     if not check_bank_linked(user_id):
         return False, (
@@ -1205,35 +1165,6 @@ async def bet_group_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE, choi
     success, message = await place_bet_in_group(ctx.bot, user_id, group_id, choice, amount, username)
     await update.message.reply_text(message, parse_mode=ParseMode.HTML)
 
-async def bet_tai_group(update, ctx): await bet_group_handler(update, ctx, "tai")
-async def bet_xiu_group(update, ctx): await bet_group_handler(update, ctx, "xiu")
-async def bet_chan_group(update, ctx): await bet_group_handler(update, ctx, "chan")
-async def bet_le_group(update, ctx): await bet_group_handler(update, ctx, "le")
-async def bet_tl_group(update, ctx): await bet_group_handler(update, ctx, "tl")
-async def bet_tc_group(update, ctx): await bet_group_handler(update, ctx, "tc")
-async def bet_xl_group(update, ctx): await bet_group_handler(update, ctx, "xl")
-async def bet_xc_group(update, ctx): await bet_group_handler(update, ctx, "xc")
-async def bet_a1_group(update, ctx): await bet_group_handler(update, ctx, "a1")
-async def bet_a2_group(update, ctx): await bet_group_handler(update, ctx, "a2")
-async def bet_a3_group(update, ctx): await bet_group_handler(update, ctx, "a3")
-async def bet_a4_group(update, ctx): await bet_group_handler(update, ctx, "a4")
-async def bet_a5_group(update, ctx): await bet_group_handler(update, ctx, "a5")
-async def bet_a6_group(update, ctx): await bet_group_handler(update, ctx, "a6")
-async def bet_d4_group(update, ctx): await bet_group_handler(update, ctx, "d4")
-async def bet_d5_group(update, ctx): await bet_group_handler(update, ctx, "d5")
-async def bet_d6_group(update, ctx): await bet_group_handler(update, ctx, "d6")
-async def bet_d7_group(update, ctx): await bet_group_handler(update, ctx, "d7")
-async def bet_d8_group(update, ctx): await bet_group_handler(update, ctx, "d8")
-async def bet_d9_group(update, ctx): await bet_group_handler(update, ctx, "d9")
-async def bet_d10_group(update, ctx): await bet_group_handler(update, ctx, "d10")
-async def bet_d11_group(update, ctx): await bet_group_handler(update, ctx, "d11")
-async def bet_d12_group(update, ctx): await bet_group_handler(update, ctx, "d12")
-async def bet_d13_group(update, ctx): await bet_group_handler(update, ctx, "d13")
-async def bet_d14_group(update, ctx): await bet_group_handler(update, ctx, "d14")
-async def bet_d15_group(update, ctx): await bet_group_handler(update, ctx, "d15")
-async def bet_d16_group(update, ctx): await bet_group_handler(update, ctx, "d16")
-async def bet_d17_group(update, ctx): await bet_group_handler(update, ctx, "d17")
-
 async def group_status_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
         await update.message.reply_text(f'{ce("⚡")} Lệnh này chỉ sử dụng được trong NHÓM!', parse_mode=ParseMode.HTML)
@@ -1258,9 +1189,6 @@ async def sd_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f'{ce("💵")} Số dư: <code>{fmt_money(balance)}đ</code>',
         parse_mode=ParseMode.HTML)
 
-# ============================================================
-# GAME XÚC XẮC ĐƠN
-# ============================================================
 async def play_xucxac_don(update, ctx, choice_code, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 2):
@@ -1309,9 +1237,6 @@ async def play_xucxac_don(update, ctx, choice_code, amount):
         f'{ce("💰")} Số dư: <code>{fmt_money(get_balance(uid))}đ</code>',
         parse_mode=ParseMode.HTML)
 
-# ============================================================
-# GAME LONG HỔ
-# ============================================================
 async def play_longho(update, ctx, choice, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 3):
@@ -1383,9 +1308,6 @@ async def lh_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_longho(update, ctx, choice, amt)
 
-# ============================================================
-# GAME MINI POKER
-# ============================================================
 async def play_minipoker(update, ctx, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 4):
@@ -1459,9 +1381,6 @@ async def mp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_minipoker(update, ctx, amt)
 
-# ============================================================
-# GAME BACCARAT
-# ============================================================
 async def play_baccarat(update, ctx, choice, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 5):
@@ -1538,9 +1457,6 @@ async def baccarat_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_baccarat(update, ctx, choice, amt)
 
-# ============================================================
-# GAME XÓC ĐĨA 4 VỊ
-# ============================================================
 async def play_xocdia4(update, ctx, choice, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 7):
@@ -1591,9 +1507,6 @@ async def xd4_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_xocdia4(update, ctx, choice, amt)
 
-# ============================================================
-# GAME TÀI XỈU MD5
-# ============================================================
 async def play_taixiumd5(update, ctx, choice, amount):
     uid = update.effective_user.id
     if is_game_banned(uid, 8):
@@ -1655,9 +1568,6 @@ async def txmd5_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ!', parse_mode=ParseMode.HTML)
     await play_taixiumd5(update, ctx, choice, amt)
 
-# ============================================================
-# /start
-# ============================================================
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1705,9 +1615,6 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(welcome_text, reply_markup=menu, parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /lienket
-# ============================================================
 async def lien_ket(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1738,9 +1645,6 @@ async def lien_ket(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f'{ce("🎮")} Bạn đã có thể tham gia chơi game!',
         parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /rut
-# ============================================================
 async def rut(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1813,9 +1717,6 @@ async def rut(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except:
         await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ.', parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /nap [số_tiền]
-# ============================================================
 async def nap_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1854,9 +1755,6 @@ async def nap_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except ValueError:
         await update.message.reply_text(f'{ce("❌")} Số tiền không hợp lệ! VD: <code>/nap 50000</code>', parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /code
-# ============================================================
 async def nhap_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1955,9 +1853,6 @@ async def nhap_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f'{ce("📊")} Hôm nay còn: <code>{remaining}/3</code> lượt nhập code.',
         parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /his
-# ============================================================
 async def history_pro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -1979,9 +1874,6 @@ async def history_pro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text(msg, parse_mode=ParseMode.HTML)
 
-# ============================================================
-# /checkprogress
-# ============================================================
 async def check_bet_progress_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     if is_banned(uid):
@@ -2016,9 +1908,6 @@ async def check_bet_progress_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         message += f'{ce("🔥")} <b>CỐ GẮNG LÊN!</b>'
     await update.message.reply_text(message, parse_mode=ParseMode.HTML)
 
-# ============================================================
-# MENU HANDLER
-# ============================================================
 async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid, txt = update.effective_user.id, update.message.text
     if not txt or is_banned(uid):
@@ -2077,7 +1966,6 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
         
-        # Áp dụng 3 ID icon mới thay thế cho 3 dòng Bước 1, Bước 2, Bước 3
         s1 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_1"]}">🔝</tg-emoji>'
         s2 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_2"]}">🔄</tg-emoji>'
         s3 = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["step_3"]}">🆕</tg-emoji>'
@@ -2203,9 +2091,6 @@ async def main_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     await handle(update, ctx)
 
-# ============================================================
-# GROUP MESSAGE HANDLER
-# ============================================================
 async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
         await main_handler(update, ctx)
@@ -2259,9 +2144,6 @@ async def handle_group_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     await main_handler(update, ctx)
 
-# ============================================================
-# XỬ LÝ INPUT CHO /codenap
-# ============================================================
 def gen_codenap():
     digits = ''.join(random.choice("0123456789") for _ in range(7))
     letters = ''.join(random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ") for _ in range(7))
@@ -2449,9 +2331,6 @@ async def codenap_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f'VD: <code>50000</code> (50,000đ)',
         parse_mode=ParseMode.HTML)
 
-# ============================================================
-# ADMIN COMMANDS
-# ============================================================
 @admin_only
 async def naptien_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     try:
@@ -2987,9 +2866,6 @@ async def admin_check_bet_progress_cmd(update: Update, ctx: ContextTypes.DEFAULT
     )
     await update.message.reply_text(message, parse_mode=ParseMode.HTML)
 
-# ============================================================
-# BẢO TRÌ
-# ============================================================
 @admin_only
 async def baotri_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     def st(k):
@@ -3101,8 +2977,8 @@ async def baotri_hethong_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def baotri_tong_cong_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    if user_id != 8619503816:
-        await update.message.reply_text(f'{ce("❌")} Chỉ Admin chính mới dùng được!', parse_mode=ParseMode.HTML)
+    if user_id not in ADMIN_IDS:
+        await update.message.reply_text(f'{ce("❌")} Chỉ Admin mới dùng được!', parse_mode=ParseMode.HTML)
         return
     if len(ctx.args) < 1:
         current_status = f'{ce("🔒")} Đang BẢO TRÌ TOÀN BỘ' if is_total_maintenance() else f'{ce("🔓")} HOẠT ĐỘNG'
@@ -3143,9 +3019,6 @@ async def tatroom_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         room_betting_enabled[chat_id] = True
         await update.message.reply_text(f'{ce("🔓")} <b>ĐÃ BẬT CƯỢC TRONG NHÓM!</b>', parse_mode=ParseMode.HTML)
 
-# ============================================================
-# CALLBACK CHỌN CỬA CƯỢC
-# ============================================================
 async def handle_game_choice_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     d = q.data
@@ -3176,9 +3049,6 @@ async def handle_game_choice_callback(update: Update, ctx: ContextTypes.DEFAULT_
             parse_mode=ParseMode.HTML)
         return
 
-# ============================================================
-# CALLBACK HANDLER
-# ============================================================
 async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     d = q.data
@@ -3369,9 +3239,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb
         )
 
-    # ==========================================================
-    # CÁC MENU GAME ĐÃ ĐƯỢC TÍCH HỢP ĐẦY ĐỦ 62 ICON ĐỘNG
-    # ==========================================================
     if d == "menu_taixiu_room":
         msg = (
             f'{ce_id(E[0])} <b>TÀI XỈU ROOM</b>\n\n'
@@ -3637,9 +3504,10 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 print(f"Lỗi gửi LOG_GROUP: {e}")
             try:
+                # ĐÃ SỬA LỖI DẤU NGOẶC NHỌN THỪA Ở ĐÂY:
                 await ctx.bot.send_message(
                     u_id,
-                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ}</code> bị từ chối.\n'
+                    f'{ce("❌")} Yêu cầu rút <code>{fmt_money(amt)}đ</code> bị từ chối.\n'
                     f'{ce("🔄")} Tiền đã được hoàn về số dư của bạn.',
                     parse_mode=ParseMode.HTML
                 )
@@ -3651,9 +3519,6 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-# ============================================================
-# ĐĂNG KÝ HANDLER
-# ============================================================
 application = ApplicationBuilder().token(TOKEN).build()
 
 application.add_handler(CommandHandler("start", start))
@@ -3711,9 +3576,6 @@ application.add_handler(CommandHandler("tatroom", tatroom_cmd))
 application.add_handler(CallbackQueryHandler(handle_callback))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_group_message))
 
-# ============================================================
-# MAIN
-# ============================================================
 async def main():
     global _bot_instance
     await application.initialize()
