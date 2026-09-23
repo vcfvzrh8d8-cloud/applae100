@@ -1604,8 +1604,8 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except:
             pass
     menu = ReplyKeyboardMarkup([
-        ["🛍 DANH SÁCH GAME", "🆓 TÀI KHOẢN"],
-        ["💸 NẠP TIỀN", "💵 RÚT TIỀN"],
+        ["🎮 GAME", "🆓 TÀI KHOẢN"],
+        ["💸 NẠP", "💵 RÚT"],
         ["🗓 LỊCH SỬ", "✉️ HỖ TRỢ"]
     ], resize_keyboard=True)
     welcome_text = (
@@ -1968,16 +1968,16 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return await user_reply.reply_text(msg, reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "💸 NẠP TIỀN":
+    if txt == "💸 NẠP":
         if is_feature_banned(uid, 'nap'):
             return await user_reply.reply_text(f'{ce("🚫")} Tính năng NẠP TIỀN đã bị khóa!', parse_mode=ParseMode.HTML)
         if check_mt('mt_nap') and uid not in ADMIN_IDS:
             return await user_reply.reply_text(f'{ce("⚙️")} Nạp Tiền đang bảo trì!', parse_mode=ParseMode.HTML)
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("20k", callback_data="dep_20000"), InlineKeyboardButton("50k", callback_data="dep_50000"), InlineKeyboardButton("100k", callback_data="dep_100000")],
-            [InlineKeyboardButton("200k", callback_data="dep_200000"), InlineKeyboardButton("500k", callback_data="dep_500000"), InlineKeyboardButton("1m", callback_data="dep_1000000")],
-            [InlineKeyboardButton("2m", callback_data="dep_2000000"), InlineKeyboardButton("5m", callback_data="dep_5000000"), InlineKeyboardButton("10m", callback_data="dep_10000000")],
-            [InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
+            [InlineKeyboardButton("10k", callback_data="dep_10000"), InlineKeyboardButton("20k", callback_data="dep_20000"), InlineKeyboardButton("50k", callback_data="dep_50000")],
+            [InlineKeyboardButton("100k", callback_data="dep_100000"), InlineKeyboardButton("200k", callback_data="dep_200000"), InlineKeyboardButton("500k", callback_data="dep_500000")],
+            [InlineKeyboardButton("1m", callback_data="dep_1000000"), InlineKeyboardButton("2m", callback_data="dep_2000000"), InlineKeyboardButton("5m", callback_data="dep_5000000")],
+            [InlineKeyboardButton("10m", callback_data="dep_10000000"), InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
         
@@ -1995,7 +1995,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         qr_url, _ = get_deposit_info(uid, 0)
         return await user_reply.reply_photo(photo=qr_url, caption=caption, reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "🛍 DANH SÁCH GAME":
+    if txt == "🎮 GAME":
         kb = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("TÀI XỈU ROOM", callback_data="menu_taixiu_room"),
@@ -2019,7 +2019,7 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f'{ce("🫵")} Vui lòng chọn game bên dưới: {ce("😮‍💨")}',
             reply_markup=kb, parse_mode=ParseMode.HTML)
 
-    if txt == "💵 RÚT TIỀN":
+    if txt == "💵 RÚT":
         if is_feature_banned(uid, 'rut'):
             return await user_reply.reply_text(f'{ce("🚫")} Tính năng RÚT TIỀN đã bị khóa!', parse_mode=ParseMode.HTML)
         if check_mt('mt_rut') and uid not in ADMIN_IDS:
@@ -3220,13 +3220,13 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return await q.message.edit_text(
                 f'{ce("🔔")} <b>HỖ TRỢ NẠP TIỀN</b>\n\n'
                 f'Vui lòng liên hệ Admin: @echcutodz\n'
-                f'Hoặc quay lại menu <b>💸 NẠP TIỀN</b> để tạo QR.',
+                f'Hoặc quay lại menu <b>💸 NẠP</b> để tạo QR.',
                 parse_mode=ParseMode.HTML)
         try:
             amount = int(d.split("_")[1])
             qr_url, caption = get_deposit_info(uid, amount)
             kb = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 Đổi số tiền", callback_data="dep_change")],
+                [InlineKeyboardButton("🔄 Đã Thanh Toán", callback_data=f"paid_dep_{amount}")],
                 [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
             ])
             return await q.message.edit_media(
@@ -3238,10 +3238,10 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if d == "dep_change":
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("20k", callback_data="dep_20000"), InlineKeyboardButton("50k", callback_data="dep_50000"), InlineKeyboardButton("100k", callback_data="dep_100000")],
-            [InlineKeyboardButton("200k", callback_data="dep_200000"), InlineKeyboardButton("500k", callback_data="dep_500000"), InlineKeyboardButton("1m", callback_data="dep_1000000")],
-            [InlineKeyboardButton("2m", callback_data="dep_2000000"), InlineKeyboardButton("5m", callback_data="dep_5000000"), InlineKeyboardButton("10m", callback_data="dep_10000000")],
-            [InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
+            [InlineKeyboardButton("10k", callback_data="dep_10000"), InlineKeyboardButton("20k", callback_data="dep_20000"), InlineKeyboardButton("50k", callback_data="dep_50000")],
+            [InlineKeyboardButton("100k", callback_data="dep_100000"), InlineKeyboardButton("200k", callback_data="dep_200000"), InlineKeyboardButton("500k", callback_data="dep_500000")],
+            [InlineKeyboardButton("1m", callback_data="dep_1000000"), InlineKeyboardButton("2m", callback_data="dep_2000000"), InlineKeyboardButton("5m", callback_data="dep_5000000")],
+            [InlineKeyboardButton("10m", callback_data="dep_10000000"), InlineKeyboardButton("20m", callback_data="dep_20000000"), InlineKeyboardButton("50m", callback_data="dep_50000000")],
             [InlineKeyboardButton("🔔 Hỗ Trợ", callback_data="dep_support")]
         ])
         
@@ -3262,41 +3262,49 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb
         )
 
-    # Đã sửa lại hoàn toàn phần game giữ nguyên ID icon chuyển động và hoạt động chuẩn xác:
     if d == "menu_taixiu_room":
         await q.answer()
         msg = (
             f'{ce_id(CUSTOM_EMOJI["game_icon_1"])} <b>TÀI XỈU ROOM</b>\n\n'
             f'🔗 <b>Link vào phòng:</b>\n'
             f'https://t.me/ts68clmmxh\n\n'
-            f'🎯 <b>HƯỚNG DẪN:</b>\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
             f'━━━━━━━━━━━━━━━━━━━━━\n'
-            f'• Bấm link trên vào nhóm\n'
-            f'• Đặt cược:\n'
-            f'  - T: Tổng 3 viên XX từ 11 - 18 Tài.\n'
-            f'  - X: Tổng 3 viên XX từ 3 - 10 Xỉu.\n'
-            f'  - C: Tổng 3 viên XX là Chẵn.\n'
-            f'  - L: Tổng 3 viên XX là Lẻ.\n\n'
-            f'• Nổ hũ khi 3 viên xúc xắc giống nhau đều là 1 hoặc 6\n\n'
-            f'• <b>Lệnh cược:</b> <code>[T/X/C/L] [tiền chơi]</code>\n'
-            f'  VD: <code>T 20000</code>\n'
-            f'• Cược ẩn danh: <code>TT/XX/CC/LL [tiền chơi]</code>\n'
-            f'• Cược tất tay: <code>T max</code> hoặc <code>C max</code>\n\n'
-            f'• Kết quả cược và trả thưởng sẽ được báo riêng.'
+            f'• Hệ thống lắc 3 viên xúc xắc ngẫu nhiên.\n'
+            f'• Cửa chính:\n'
+            f'  - Tài (T): Tổng điểm 3 viên từ 11 đến 18.\n'
+            f'  - Xỉu (X): Tổng điểm từ 3 đến 10.\n'
+            f'  - Chẵn (C): Tổng điểm là số chẵn.\n'
+            f'  - Lẻ (L): Tổng điểm là số lẻ.\n'
+            f'• Cửa kết hợp (trả thưởng x3.2):\n'
+            f'  - TL (Tài + Lẻ)\n'
+            f'  - TC (Tài + Chẵn)\n'
+            f'  - XL (Xỉu + Lẻ)\n'
+            f'  - XC (Xỉu + Chẵn)\n'
+            f'• Nổ hũ Jackpot:\n'
+            f'  - Ra 3 con 6 (cửa Tài trúng hũ).\n'
+            f'  - Ra 3 con 1 (cửa Xỉu trúng hũ).\n'
+            f'• Tỷ lệ trả thưởng:\n'
+            f'  - Tài / Xỉu / Chẵn / Lẻ: x1.95\n'
+            f'  - Cửa kết hợp: x3.2\n'
+            f'  - Bộ ba đồng nhất: x150\n\n'
+            f'💡 <b>Cách chơi:</b> Nhắn lệnh vào nhóm VD: <code>T 20000</code> hoặc cược ẩn danh nhắn riêng cho bot.'
         )
         return await q.message.edit_text(msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
     if d == "menu_xucxac_don":
         await q.answer()
         msg = (
-            f'{ce_id(CUSTOM_EMOJI["game_icon_2"])} <b>XÚC XẮC TELEGRAM</b>\n\n'
-            f'🎲 <b>Thể lệ:</b>\n'
-            f'• <code>XXC</code> ➤ x1.95 ➤ Xúc Xắc: 2, 4, 6\n'
-            f'• <code>XXL</code> ➤ x1.95 ➤ Xúc Xắc: 1, 3, 5\n'
-            f'• <code>XXT</code> ➤ x1.95 ➤ Xúc Xắc: 4, 5, 6\n'
-            f'• <code>XXX</code> ➤ x1.95 ➤ Xúc Xắc: 1, 2, 3\n'
-            f'• <code>D1</code> đến <code>D6</code> ➤ x5 ➤ Xúc Xắc tương ứng\n\n'
-            f'💡 <b>Cách chơi:</b> <code>D1 10000</code> hoặc <code>XXC 50000</code>'
+            f'{ce_id(CUSTOM_EMOJI["game_icon_2"])} <b>XÚC XẮC ĐƠN (Xúc Xắc Telegram)</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Dự đoán kết quả của 1 viên xúc xắc do Telegram quay.\n\n'
+            f'📊 <b>Các cửa cược & Tỷ lệ trả thưởng:</b>\n'
+            f'• <code>XXC</code> (Chẵn - các mặt 2, 4, 6): x1.95\n'
+            f'• <code>XXL</code> (Lẻ - các mặt 1, 3, 5): x1.95\n'
+            f'• <code>XXT</code> (Tài - các mặt 4, 5, 6): x1.95\n'
+            f'• <code>XXX</code> (Xỉu - các mặt 1, 2, 3): x1.95\n'
+            f'• <code>D1</code> đến <code>D6</code> (Đoán chính xác mặt xúc xắc ra từ 1 đến 6): x5\n\n'
+            f'💡 <b>Cách chơi:</b> <code>[Mã_cửa] [số_tiền]</code> VD: <code>XXC 50000</code> hoặc <code>D3 20000</code>'
         )
         return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
@@ -3308,11 +3316,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ])
         return await q.message.edit_text(
             f'{ce_id(CUSTOM_EMOJI["game_icon_3"])} <b>LONG HỔ</b>\n\n'
-            f'📜 <b>Luật chơi:</b>\n'
-            f'• So sánh điểm 2 lá bài LONG và HỔ\n'
-            f'• Bên nào điểm cao hơn thắng\n'
-            f'• Nếu bằng điểm → Hòa, hoàn tiền\n\n'
-            f'💲 <b>Tỉ lệ ăn: x1.95</b>\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• So sánh điểm số của 2 lá bài chia cho cửa LONG và HỔ.\n'
+            f'• Bên nào có điểm lớn hơn (A nhỏ nhất, K lớn nhất) thì bên đó thắng.\n'
+            f'• Nếu điểm bằng nhau → Hòa (hoàn lại tiền cược).\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
             f'👇 <b>Chọn cửa để đặt cược:</b>',
             reply_markup=kb, parse_mode=ParseMode.HTML)
 
@@ -3320,12 +3328,15 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.answer()
         msg = (
             f'{ce_id(CUSTOM_EMOJI["game_icon_4"])} <b>MINI POKER</b>\n\n'
-            f'📜 <b>Luật chơi:</b>\n'
-            f'• <b>Tứ Quý</b> (4 lá cùng rank): x100\n'
-            f'• <b>Bộ Ba</b> (3 lá cùng rank): x25\n'
-            f'• <b>Hai Đôi</b>: x10\n'
-            f'• <b>Một Đôi</b>: x2\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/mp [số_tiền]</code>'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Bot bốc ngẫu nhiên 5 lá bài để phân định thắng thua dựa trên các tay bài Poker.\n\n'
+            f'📊 <b>Các tổ hợp & Tỷ lệ trả thưởng:</b>\n'
+            f'• Tứ Quý (4 lá cùng số): x100\n'
+            f'• Bộ Ba (3 lá cùng số): x25\n'
+            f'• Hai Đôi: x10\n'
+            f'• Một Đôi: x2\n'
+            f'• Bài rác (Không có đôi nào): Thua.\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/mp [số_tiền]</code> VD: <code>/mp 10000</code>'
         )
         return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
@@ -3338,11 +3349,13 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ])
         return await q.message.edit_text(
             f'{ce_id(CUSTOM_EMOJI["game_icon_5"])} <b>BACCARAT</b>\n\n'
-            f'📜 <b>Luật chơi:</b>\n'
-            f'• So sánh điểm PLAYER và BANKER\n'
-            f'• Điểm gần 9 nhất thắng\n'
-            f'• TIE (Hòa) trả x9\n\n'
-            f'💲 <b>Tỉ lệ:</b> PLAYER x2, BANKER x2, TIE x9\n\n'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• So sánh điểm giữa cửa PLAYER và BANKER (tính điểm từ 0 đến 9, gần 9 nhất là thắng, có luật rút thêm lá thứ 3 nếu điểm dưới 6).\n'
+            f'• Cửa TIE là cửa Hòa.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b>\n'
+            f'• Player: x2\n'
+            f'• Banker: x2\n'
+            f'• Tie (Hòa): x9\n\n'
             f'👇 <b>Chọn cửa để đặt cược:</b>',
             reply_markup=kb, parse_mode=ParseMode.HTML)
 
@@ -3350,12 +3363,12 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.answer()
         msg = (
             f'{ce_id(CUSTOM_EMOJI["game_icon_6"])} <b>XÓC ĐĨA 4 VỊ</b>\n\n'
-            f'📜 <b>Luật chơi:</b>\n'
-            f'• 4 đồng xu được xóc ngẫu nhiên\n'
-            f'• Chẵn: 0, 2, 4 đỏ\n'
-            f'• Lẻ: 1, 3 đỏ\n\n'
-            f'💲 <b>Tỉ lệ ăn: x1.95</b>\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/xd4 [chan/le] [số_tiền]</code>'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Xóc ngẫu nhiên 4 đồng xu (mỗi đồng xu có mặt Đỏ hoặc Trắng).\n'
+            f'• Chẵn: Tổng số mặt đỏ là 0, 2 hoặc 4 đỏ (hoặc toàn trắng/toàn đỏ).\n'
+            f'• Lẻ: Tổng số mặt đỏ là 1 hoặc 3 đỏ.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/xd4 [chan/le] [số_tiền]</code> VD: <code>/xd4 chan 50000</code>'
         )
         return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
@@ -3363,12 +3376,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.answer()
         msg = (
             f'{ce_id(CUSTOM_EMOJI["game_icon_7"])} <b>TÀI XỈU MD5</b>\n\n'
-            f'📜 <b>Luật chơi:</b>\n'
-            f'• Dùng hash MD5 để random 3 xúc xắc\n'
-            f'• Tổng 11-18: TÀI, 3-10: XỈU\n'
-            f'• Tổng chẵn: CHẴN, lẻ: LẺ\n\n'
-            f'💲 <b>Tỉ lệ ăn: x1.95</b>\n\n'
-            f'💡 <b>Cách chơi:</b> <code>/txmd5 [tai/xiu/chan/le] [số_tiền]</code>'
+            f'🎯 <b>LUẬT CHƠI:</b>\n'
+            f'• Sử dụng mã hóa MD5 từ chuỗi ngẫu nhiên của hệ thống để tạo ra kết quả 3 viên xúc xắc một cách minh bạch, chống gian lận.\n'
+            f'• Tổng điểm 11-18 là Tài, 3-10 là Xỉu. Tổng chẵn là Chẵn, lẻ là Lẻ.\n\n'
+            f'💲 <b>Tỷ lệ trả thưởng:</b> x1.95\n\n'
+            f'💡 <b>Cách chơi:</b> <code>/txmd5 [tai/xiu/chan/le] [số_tiền]</code> VD: <code>/txmd5 tai 50000</code>'
         )
         return await q.message.edit_text(msg, parse_mode=ParseMode.HTML)
 
