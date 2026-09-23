@@ -126,7 +126,7 @@ CUSTOM_EMOJI = {
     "step_1": "5415655814079723871",
     "step_2": "5375338737028841420",
     "step_3": "5382357040008021292",
-    "😆": "5375135722514685501" # Icon mới từ JSON bạn gửi
+    "😆": "5375135722514685501"
 }
 
 E = [
@@ -1865,10 +1865,14 @@ async def history_pro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not data:
         await update.message.reply_text(f'{ce("📥")} Lịch sử trống.', parse_mode=ParseMode.HTML)
     else:
-        msg = f'{ce("📜")} <b>LỊCH SỬ CHI TIẾT:</b>\n\n'
+        msg = f'{ce("📜")} <b>LỊCH SỬ CHI TIẾT:</b>\n'
+        msg += f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
         for d in data:
-            icon = f'{ce("✅")}' if d[0] > 0 else f'{ce("❌")}' # Đã sửa dấu tích ở lịch sử
-            msg += f'{icon} <code>{fmt_money(d[0])}đ</code> | {html.escape(d[1])} | <i>{d[2]}</i>\n'
+            # Sử dụng custom emoji cho dấu + và -
+            icon = f'<tg-emoji emoji-id="{CUSTOM_EMOJI["✔️"]}">✔️</tg-emoji>' if d[0] > 0 else f'<tg-emoji emoji-id="{CUSTOM_EMOJI["❌"]}">❌</tg-emoji>'
+            msg += f'{icon} <code>{fmt_money(abs(d[0]))}đ</code> | {html.escape(d[1])}\n'
+            msg += f'     <i>🕒 {d[2]}</i>\n'
+        msg += f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
         if len(msg) > 4000:
             for x in range(0, len(msg), 4000):
                 await update.message.reply_text(msg[x:x+4000], parse_mode=ParseMode.HTML)
@@ -1982,14 +1986,23 @@ async def handle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await user_reply.reply_photo(photo=qr_url, caption=caption, reply_markup=kb, parse_mode=ParseMode.HTML)
 
     if txt == "🛍 DANH SÁCH GAME":
+        # Sửa thành 2 game mỗi hàng ngang
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("😵 TÀI XỈU ROOM", callback_data="menu_taixiu_room")],
-            [InlineKeyboardButton("🚫 XÚC XẮC ĐƠN", callback_data="menu_xucxac_don")],
-            [InlineKeyboardButton("⚰️ LONG HỔ", callback_data="menu_longho")],
-            [InlineKeyboardButton("🔝 MINI POKER", callback_data="menu_minipoker")],
-            [InlineKeyboardButton("⬆️ BACCARAT", callback_data="menu_baccarat")],
-            [InlineKeyboardButton("❓ XÓC ĐĨA 4 VỊ", callback_data="menu_xocdia4")],
-            [InlineKeyboardButton("👌 TÀI XỈU MD5", callback_data="menu_taixiumd5")],
+            [
+                InlineKeyboardButton("😵 TÀI XỈU ROOM", callback_data="menu_taixiu_room"),
+                InlineKeyboardButton("🚫 XÚC XẮC ĐƠN", callback_data="menu_xucxac_don")
+            ],
+            [
+                InlineKeyboardButton("⚰️ LONG HỔ", callback_data="menu_longho"),
+                InlineKeyboardButton("🔝 MINI POKER", callback_data="menu_minipoker")
+            ],
+            [
+                InlineKeyboardButton("⬆️ BACCARAT", callback_data="menu_baccarat"),
+                InlineKeyboardButton("❓ XÓC ĐĨA 4 VỊ", callback_data="menu_xocdia4")
+            ],
+            [
+                InlineKeyboardButton("👌 TÀI XỈU MD5", callback_data="menu_taixiumd5")
+            ]
         ])
         return await user_reply.reply_text(
             f'{ce("🛍")} <b>DANH SÁCH TRÒ CHƠI</b>\n'
@@ -3372,7 +3385,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             text += "Trống."
         else:
             for row in data:
-                text += f'{ce("✅")} <code>+{fmt_money(row[0])}đ</code> | <i>{row[1]}</i>\n'
+                text += f'{ce("✔️")} <code>+{fmt_money(row[0])}đ</code> | <i>{row[1]}</i>\n'
         return await ctx.bot.send_message(uid, text, parse_mode=ParseMode.HTML)
 
     if d == "his_withdraw":
@@ -3382,7 +3395,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             text += "Trống."
         else:
             for row in data:
-                status_icon = f'{ce("✅")}' if row[1] == "success" else f'{ce("❌")}' if row[1] == "rejected" else f'{ce("⏰")}' # Đã sửa dấu tích
+                status_icon = f'{ce("✔️")}' if row[1] == "success" else f'{ce("❌")}' if row[1] == "rejected" else f'{ce("⏰")}'
                 text += f'{status_icon} <code>{fmt_money(row[0])}đ</code> | {row[1]} | <i>{row[2]}</i>\n'
         return await ctx.bot.send_message(uid, text, parse_mode=ParseMode.HTML)
 
