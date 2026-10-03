@@ -53,6 +53,14 @@ async def init_db():
                         ref_commission DOUBLE PRECISION
                     );
                 """)
+                # Tự động bổ sung cột nếu bảng cũ bị thiếu
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS total_nap DOUBLE PRECISION;")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS total_cuoc DOUBLE PRECISION;")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS history_nap TEXT[];")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS history_rut TEXT[];")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS referrer_id BIGINT;")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_count INT;")
+                await connection.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS ref_commission DOUBLE PRECISION;")
             logging.info("Đã kết nối và khởi tạo PostgreSQL thành công.")
         except Exception as e:
             logging.error(f"Lỗi kết nối PostgreSQL: {e}")
@@ -216,7 +224,7 @@ def get_game_list_inline_kb():
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Tài Xỉu <emoji id=5256131095094652290>🎯</emoji>", callback_data="game_tx"), InlineKeyboardButton(text="Chẵn Lẻ <emoji id=5271837459783638319>↔️</emoji>", callback_data="game_cl")],
         [InlineKeyboardButton(text="Bỏng Ngô <emoji id=5451882707875276247>🕯</emoji>", callback_data="game_ngo"), InlineKeyboardButton(text="Bóng Rổ <emoji id=5381975814415866082>🪙</emoji>", callback_data="game_br")],
-        [InlineKeyboardButton(text="Bóng Đá <emoji id=5240037474679398914>🚘</emoji>", callback_data="game_bd"), InlineKeyboardButton(text="Bowling <emoji id=5240242851425559175>☔️️</emoji>", callback_data="game_bw")],
+        [InlineKeyboardButton(text="Bóng Đá <emoji id=5240037474679398914>🚘</emoji>", callback_data="game_bd"), InlineKeyboardButton(text="Bowling <emoji id=5240242851425559175>☔</emoji>", callback_data="game_bw")],
         [InlineKeyboardButton(text="Phi Tiêu <emoji id=5256131095094652290>🎯</emoji>", callback_data="game_pt"), InlineKeyboardButton(text="Kéo Búa Bao <emoji id=5276239041052828276>🎭</emoji>", callback_data="game_kbb")],
         [InlineKeyboardButton(text="Quay Hũ PG <emoji id=5222079954421818267>🆒</emoji>", callback_data="game_slot_pg"), InlineKeyboardButton(text="Cứu Thương <emoji id=5251203410396458957>🛡</emoji>", callback_data="game_cuu_thuong")],
         [InlineKeyboardButton(text="Đèn Đỏ Đèn Xanh <emoji id=5240037474679398914>🚘</emoji>", callback_data="game_den_do_den_xanh"), InlineKeyboardButton(text="Rót Rượu <emoji id=5260567255145539253>🥂</emoji>", callback_data="game_rot_ruou")],
@@ -409,7 +417,7 @@ async def cmd_admin_cong(message: types.Message):
         target_user = get_user(target_id)
         target_user["balance"] += amount
         await save_user_to_db(target_id)
-        await message.reply(f"<emoji id=5206607081334906820>✔️️</emoji> Đã cộng <b>{amount:,.0f} VND</b> cho ID <code>{target_id}</code>. Số dư mới: {target_user['balance']:,.0f} VND")
+        await message.reply(f"<emoji id=5206607081334906820>✔</emoji> Đã cộng <b>{amount:,.0f} VND</b> cho ID <code>{target_id}</code>. Số dư mới: {target_user['balance']:,.0f} VND")
     except ValueError:
         await message.reply("<emoji id=5210952531676504517>❌</emoji> ID hoặc số tiền không hợp lệ!")
 
@@ -651,7 +659,7 @@ async def process_game_callback(callback: types.CallbackQuery, state: FSMContext
         text = (
             "🖐️✌️👊 <b>GAME KÉO BÚA BAO</b>\n\n"
             "<b>Hướng dẫn chơi:</b>\n"
-            "• Chọn ✌️(Kéo): Thắng 🖐️ - Thua 👊 - Hoà ✌️\n"
+            "• Chọn ✌️️(Kéo): Thắng 🖐️ - Thua 👊 - Hoà ✌️\n"
             "• Chọn 👊(Búa): Thắng ✌️ - Thua 🖐️ - Hoà 🖐️\n"
             "• Chọn 🖐️(Bao): Thắng 👊 - Thua ✌️ - Hoà 🖐\n"
             "• <b>Tỉ lệ trả thưởng khi thắng:</b> x1,95 số tiền cược\n"
@@ -1220,7 +1228,7 @@ async def cmd_game_aviator_bay(message: types.Message):
     try:
         admin_msg = await bot.send_message(
             ADMIN_ID,
-            f"<emoji id=5406745015365943482>⬇️️</emoji> <b>THÔNG BÁO KHÁCH BAY (AVIATOR)</b>\n\n"
+            f"<emoji id=5406745015365943482>⬇</emoji> <b>THÔNG BÁO KHÁCH BAY (AVIATOR)</b>\n\n"
             f"👤 Khách hàng: <b>{name}</b> (<code>{user_id}</code>)\n"
             f"<emoji id=5409048419211682843>💵</emoji> Số tiền cược: <b>{amount:,.0f} VND</b>\n"
             f"<emoji id=5256131095094652290>🎯</emoji> Hệ số tối đa phiên: <b>x{target_x:.2f}</b>\n"
@@ -1637,7 +1645,7 @@ async def catch_all_messages(message: types.Message):
                 if amount > 100000:
                     try:
                         admin_alert = (
-                            f"<emoji id=5447644880824181073>⚠️</emoji> <b>THÔNG BÁO CƯỢC LỚN (>100K)</b> <emoji id=5447644880824181073>⚠️️</emoji>\n\n"
+                            f"<emoji id=5447644880824181073>⚠️</emoji> <b>THÔNG BÁO CƯỢC LỚN (>100K)</b> <emoji id=5447644880824181073>⚠</emoji>\n\n"
                             f"👤 <b>Người cược:</b> {name} (<code>{user_id}</code>)\n"
                             f"<emoji id=5256131095094652290>🎯</emoji> <b>Cửa cược:</b> <b>{bet_type.upper()}</b> "
                             f"{'(Ẩn danh)' if is_anonymous else ''}\n"
